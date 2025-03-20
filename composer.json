@@ -81,5 +81,9 @@
             "allow-contrib": false,
             "require": "7.2.*"
         }
+    },
+    "require-dev": {
+        "brunobandev/bruno-sdk": "^1.0",
+        "symfony/maker-bundle": "^1.62"
     }
 }
