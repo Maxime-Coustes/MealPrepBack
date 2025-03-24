@@ -1,0 +1,11 @@
+meta {
+  name: GetIngredientByNameAction
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8000/ingredients/{nom}
+  body: none
+  auth: none
+}

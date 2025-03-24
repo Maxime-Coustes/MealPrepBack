@@ -1,0 +1,11 @@
+meta {
+  name: DeleteIngredientByName
+  type: http
+  seq: 6
+}
+
+delete {
+  url: http://localhost:8000/ingredients/{nom}
+  body: none
+  auth: none
+}
