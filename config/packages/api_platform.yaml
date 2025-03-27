@@ -1,6 +1,12 @@
 api_platform:
-    title: Hello API Platform
+    title: Hello API Platform =)
     version: 1.0.0
+    collection:
+        pagination:
+            enabled: true  # Permet la pagination
+            page_parameter_name: page  # Nom du paramètre pour la page
+            items_per_page_parameter_name: itemsPerPage  # Paramètre pour le nombre d'éléments par page
+        order: "createdAt"  # Tri par défaut sur le champ `createdAt`
     defaults:
         stateless: true
         cache_headers:

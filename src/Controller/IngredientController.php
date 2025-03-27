@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+
 class IngredientController extends AbstractController
 {
     private $ingredientService;
@@ -19,6 +20,7 @@ class IngredientController extends AbstractController
     {
         $this->ingredientService = $ingredientService;
     }
+
 
     #[Route('/ingredients', name: 'create', methods: ['POST'])]
     public function createIngredientsAction(Request $request): JsonResponse
@@ -46,7 +48,7 @@ class IngredientController extends AbstractController
         try {
             // Appeler le service une seule fois et récupérer le résultat
             $success = $this->ingredientService->createIngredients($ingredientCollection);
-            
+
             // Gérer le résultat en fonction de la réponse
             if ($success) {
                 $noms = array_column($data, 'nom');
@@ -58,11 +60,10 @@ class IngredientController extends AbstractController
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
-        
     }
 
 
-    #[Route('/ingredients', name: 'get', methods: ['GET'])]
+    #[Route('/ingredients', name: 'getIngredientsList', methods: ['GET'])]
     public function getIngredientsListAction(): JsonResponse
     {
         try {
@@ -90,9 +91,10 @@ class IngredientController extends AbstractController
         }
     }
 
-    #[Route('/ingredients/{nom}', name: 'get', methods: ['GET'])]
+    #[Route('/ingredients/{nom}', name: 'getIngredientByName', methods: ['GET'])]
     public function getIngredientByNameAction(string $nom): JsonResponse
     {
+        $nom = ucfirst($nom);
         try {
             // Récupérer l'ingrédient par son nom
             $ingredient = $this->ingredientService->getIngredientByName($nom);
