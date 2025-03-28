@@ -2,10 +2,17 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\IngredientRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
+#[ApiResource(operations: [
+    new GetCollection(uriTemplate: '/ingredients'),
+    new Get(uriTemplate: '/ingredients/{nom}', requirements: ['nom' => '\w+']),
+])]
 class Ingredient
 {
     #[ORM\Id]
@@ -13,7 +20,7 @@ class Ingredient
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     private ?string $nom = null;
 
     #[ORM\Column(length: 10)]

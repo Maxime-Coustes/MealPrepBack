@@ -9,7 +9,6 @@
         "ext-iconv": "*",
         "api-platform/doctrine-orm": "^4.1",
         "api-platform/symfony": "^4.1",
-        "api-platform/core": "^3.0",
         "doctrine/dbal": "^3",
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.4",
@@ -87,6 +86,7 @@
     },
     "require-dev": {
         "brunobandev/bruno-sdk": "^1.0",
+        "nyholm/psr7": "^1.8",
         "symfony/maker-bundle": "^1.62",
         "symfony/stopwatch": "7.2.*",
         "symfony/var-dumper": "7.2.*",
