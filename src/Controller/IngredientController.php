@@ -11,10 +11,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-
-
-
-
 class IngredientController extends AbstractController
 {
     private $ingredientService;
@@ -95,30 +91,6 @@ class IngredientController extends AbstractController
     }
 
     #[Route('/ingredients/{nom}', name: 'getIngredientByName', methods: ['GET'])]
-    /**
-     * @OA\Get(
-     *     path="/ingredients/{nom}",
-     *     summary="Récupère un ingrédient par son nom",
-     *     @OA\Parameter(
-     *         name="nom",
-     *         in="path",
-     *         description="Nom de l'ingrédient",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Ingrédient trouvé",
-     *         @OA\JsonContent(ref=@Model(type=Ingredient::class))
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Ingrédient non trouvé"
-     *     )
-     * )
-     * 
-     * @Route("/ingredients/{nom}", name="get_ingredient", methods={"GET"})
-     */
     public function getIngredientByNameAction(string $nom): JsonResponse
     {
         $nom = ucfirst($nom);
