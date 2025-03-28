@@ -10,4 +10,5 @@ interface IngredientServiceInterface
     public function getIngredientsListAction(): array;
     public function getIngredientByName(string $nom): ?Ingredient;
     public function deleteIngredient(Ingredient $ingredient): void;
+    public function updateIngredients(IngredientCollection $ingredients): IngredientCollection;
 }

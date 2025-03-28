@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class IngredientController extends AbstractController
@@ -144,6 +145,42 @@ class IngredientController extends AbstractController
         } catch (\Exception $e) {
             // Gestion des erreurs et retour d'une réponse d'erreur générique
             return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/ingredients', name: 'update', methods: ['PUT'])]
+    public function updateIngredientsAction(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        // Vérifie si les données sont vides
+        if (empty($data)) {
+            return new JsonResponse(['error' => 'No data provided'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        // Crée une collection d'ingrédients à partir des données
+        $ingredientCollection = new IngredientCollection();
+
+        foreach ($data as $ingredientData) {
+            $ingredient = new Ingredient();
+            $ingredient->setNom($ingredientData['nom']);
+            $ingredient->setUnite($ingredientData['unite']);
+            $ingredient->setProteines($ingredientData['proteines']);
+            $ingredient->setLipides($ingredientData['lipides']);
+            $ingredient->setGlucides($ingredientData['glucides']);
+            $ingredient->setCalories($ingredientData['calories']);
+
+            $ingredientCollection->addIngredient($ingredient);
+        }
+
+        try {
+            $updatedIngredients = $this->ingredientService->updateIngredients($ingredientCollection);
+            return new JsonResponse([
+                'message' => 'Ingredients updated successfully',
+                'ingredients' => $updatedIngredients
+            ], JsonResponse::HTTP_OK);
+        } catch (NotFoundHttpException $e) {
+            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
         }
     }
 }
