@@ -29,7 +29,7 @@ class IngredientRepository extends ServiceEntityRepository
             // Utilisation des données du tableau associatif pour remplir l'objet
             $ingredient->setName($ingredient->getName());
             $ingredient->setUnite($ingredient->getUnite());
-            $ingredient->setProteines($ingredient->getProteines());
+            $ingredient->setProteins($ingredient->getProteins());
             $ingredient->setLipides($ingredient->getLipides());
             $ingredient->setGlucides($ingredient->getGlucides());
             $ingredient->setCalories($ingredient->getCalories());
@@ -104,7 +104,7 @@ class IngredientRepository extends ServiceEntityRepository
             // Met à jour les propriétés de l'ingrédient
             $existingIngredient->setName($ingredient->getName());
             $existingIngredient->setUnite($ingredient->getUnite());
-            $existingIngredient->setProteines($ingredient->getProteines());
+            $existingIngredient->setProteins($ingredient->getProteins());
             $existingIngredient->setLipides($ingredient->getLipides());
             $existingIngredient->setGlucides($ingredient->getGlucides());
             $existingIngredient->setCalories($ingredient->getCalories());

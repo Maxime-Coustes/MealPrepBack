@@ -37,7 +37,7 @@ class IngredientController extends AbstractController
             $ingredient = new Ingredient();
             $ingredient->setName($ingredientData['name']);
             $ingredient->setUnite($ingredientData['unite']);
-            $ingredient->setProteines($ingredientData['proteines']);
+            $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setLipides($ingredientData['lipides']);
             $ingredient->setGlucides($ingredientData['glucides']);
             $ingredient->setCalories($ingredientData['calories']);
@@ -76,7 +76,7 @@ class IngredientController extends AbstractController
                 $collection[] = [
                     'name' => $ingredient->getName(),
                     'unite' => $ingredient->getUnite(),
-                    'proteines' => $ingredient->getProteines(),
+                    'proteins' => $ingredient->getProteins(),
                     'lipides' => $ingredient->getLipides(),
                     'glucides' => $ingredient->getGlucides(),
                     'calories' => $ingredient->getCalories(),
@@ -111,7 +111,7 @@ class IngredientController extends AbstractController
                 $data[] = [
                     'name' => $ingredient->getName(),
                     'unite' => $ingredient->getUnite(),
-                    'proteines' => $ingredient->getProteines(),
+                    'proteins' => $ingredient->getProteins(),
                     'lipides' => $ingredient->getLipides(),
                     'glucides' => $ingredient->getGlucides(),
                     'calories' => $ingredient->getCalories(),
@@ -167,7 +167,7 @@ class IngredientController extends AbstractController
             $ingredient = new Ingredient();
             $ingredient->setName($ingredientData['name']);
             $ingredient->setUnite($ingredientData['unite']);
-            $ingredient->setProteines($ingredientData['proteines']);
+            $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setLipides($ingredientData['lipides']);
             $ingredient->setGlucides($ingredientData['glucides']);
             $ingredient->setCalories($ingredientData['calories']);

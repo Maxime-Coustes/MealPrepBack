@@ -20,7 +20,7 @@ class Ingredient
     private ?string $unite = null;
 
     #[ORM\Column]
-    private ?float $proteines = null;
+    private ?float $proteins = null;
 
     #[ORM\Column]
     private ?float $lipides = null;
@@ -60,14 +60,14 @@ class Ingredient
         return $this;
     }
 
-    public function getProteines(): ?float
+    public function getProteins(): ?float
     {
-        return $this->proteines;
+        return $this->proteins;
     }
 
-    public function setProteines(float $proteines): static
+    public function setProteins(float $proteins): static
     {
-        $this->proteines = $proteines;
+        $this->proteins = $proteins;
 
         return $this;
     }
