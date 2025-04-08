@@ -27,7 +27,7 @@ class IngredientRepository extends ServiceEntityRepository
         foreach ($ingredientsCollection->getIngredients() as $ingredient) {
 
             // Utilisation des données du tableau associatif pour remplir l'objet
-            $ingredient->setNom($ingredient->getNom());
+            $ingredient->setName($ingredient->getName());
             $ingredient->setUnite($ingredient->getUnite());
             $ingredient->setProteines($ingredient->getProteines());
             $ingredient->setLipides($ingredient->getLipides());
@@ -47,17 +47,17 @@ class IngredientRepository extends ServiceEntityRepository
         return $this->ingredientRepository->findAll();
     }
 
-    public function findByNom(string $nom): ?IngredientCollection
+    public function findByName(string $name): ?IngredientCollection
     {
-        // return $this->findOneBy(['nom' => $nom]);
+        // return $this->findOneBy(['name' => $name]);
         // return $this->createQueryBuilder('i')
-        // ->where('i.nom LIKE :nom')
-        // ->setParameter('nom', $nom . '%')
+        // ->where('i.name LIKE :name')
+        // ->setParameter('name', $name . '%')
         // ->getQuery()
         // ->getOneOrNullResult();
         $results = $this->createQueryBuilder('i')
-            ->where('LOWER(i.nom) LIKE LOWER(:nom)')
-            ->setParameter('nom', $nom . '%')
+            ->where('LOWER(i.name) LIKE LOWER(:name)')
+            ->setParameter('name', $name . '%')
             ->getQuery()
             ->getResult();
 
@@ -93,16 +93,16 @@ class IngredientRepository extends ServiceEntityRepository
 
         // Parcours chaque ingrédient dans la collection
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
-            $existingIngredient = $this->findOneByNom($ingredient->getNom());  // Trouve l'ingrédient par son nom
+            $existingIngredient = $this->findOneByName($ingredient->getName());  // Trouve l'ingrédient par son name
 
             if (!$existingIngredient) {
                 // faire un create plutot ?
                 // $this->createIngredients($ingredient);
-                throw new NotFoundHttpException('Ingredient not found with name ' . $ingredient->getNom());
+                throw new NotFoundHttpException('Ingredient not found with name ' . $ingredient->getName());
             }
 
             // Met à jour les propriétés de l'ingrédient
-            $existingIngredient->setNom($ingredient->getNom());
+            $existingIngredient->setName($ingredient->getName());
             $existingIngredient->setUnite($ingredient->getUnite());
             $existingIngredient->setProteines($ingredient->getProteines());
             $existingIngredient->setLipides($ingredient->getLipides());

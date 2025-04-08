@@ -46,8 +46,8 @@ class IngredientService implements IngredientServiceInterface
 
     private function checkIfExists(Ingredient $ingredient): bool
     {
-        // Vérifie si un ingrédient avec le même nom existe déjà dans la base
-        $existingIngredient = $this->ingredientRepository->findOneBy(['nom' => $ingredient->getNom()]);
+        // Vérifie si un ingrédient avec le même name existe déjà dans la base
+        $existingIngredient = $this->ingredientRepository->findOneBy(['name' => $ingredient->getName()]);
 
         // Si l'ingrédient existe déjà, on retourne true
         return $existingIngredient !== null;
@@ -59,9 +59,9 @@ class IngredientService implements IngredientServiceInterface
         return $this->ingredientRepository->findAll();
     }
 
-    public function getIngredientByName(string $nom): ?IngredientCollection
+    public function getIngredientByName(string $name): ?IngredientCollection
     {
-        return $this->ingredientRepository->findByNom($nom);
+        return $this->ingredientRepository->findByName($name);
     }
 
     public function deleteIngredients(IngredientCollection $ingredientCollection): void

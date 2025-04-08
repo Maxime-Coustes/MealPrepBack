@@ -35,7 +35,7 @@ class IngredientController extends AbstractController
 
         foreach ($data as $ingredientData) {
             $ingredient = new Ingredient();
-            $ingredient->setNom($ingredientData['nom']);
+            $ingredient->setName($ingredientData['name']);
             $ingredient->setUnite($ingredientData['unite']);
             $ingredient->setProteines($ingredientData['proteines']);
             $ingredient->setLipides($ingredientData['lipides']);
@@ -51,11 +51,11 @@ class IngredientController extends AbstractController
 
             // Gérer le résultat en fonction de la réponse
             if ($success) {
-                $noms = array_column($data, 'nom');
-                return new JsonResponse(['message' => 'Ingredients created successfully', 'ingredients' => $noms], JsonResponse::HTTP_CREATED);
+                $names = array_column($data, 'name');
+                return new JsonResponse(['message' => 'Ingredients created successfully', 'ingredients' => $names], JsonResponse::HTTP_CREATED);
             } else {
-                $noms = array_column($data, 'nom');
-                return new JsonResponse(['message' => 'Ingredient already exists', 'ingredients' => $noms], JsonResponse::HTTP_CONFLICT);
+                $names = array_column($data, 'name');
+                return new JsonResponse(['message' => 'Ingredient already exists', 'ingredients' => $names], JsonResponse::HTTP_CONFLICT);
             }
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
@@ -74,7 +74,7 @@ class IngredientController extends AbstractController
             $collection = [];
             foreach ($ingredientsCollection as $ingredient) {
                 $collection[] = [
-                    'nom' => $ingredient->getNom(),
+                    'name' => $ingredient->getName(),
                     'unite' => $ingredient->getUnite(),
                     'proteines' => $ingredient->getProteines(),
                     'lipides' => $ingredient->getLipides(),
@@ -91,14 +91,14 @@ class IngredientController extends AbstractController
         }
     }
 
-    #[Route('/ingredients/{nom}', name: 'getIngredientByName', methods: ['GET'])]
-    public function getIngredientByNameAction(string $nom): JsonResponse
+    #[Route('/ingredients/{name}', name: 'getIngredientByName', methods: ['GET'])]
+    public function getIngredientByNameAction(string $name): JsonResponse
     {
-        $nom = ucfirst($nom);
+        $name = ucfirst($name);
 
         try {
-            // Récupérer les ingrédients correspondant partiellement au nom
-            $ingredientsCollection = $this->ingredientService->getIngredientByName($nom);
+            // Récupérer les ingrédients correspondant partiellement au name
+            $ingredientsCollection = $this->ingredientService->getIngredientByName($name);
 
             if ($ingredientsCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
@@ -109,7 +109,7 @@ class IngredientController extends AbstractController
 
             foreach ($ingredientsCollection->getIngredients() as $ingredient) {
                 $data[] = [
-                    'nom' => $ingredient->getNom(),
+                    'name' => $ingredient->getName(),
                     'unite' => $ingredient->getUnite(),
                     'proteines' => $ingredient->getProteines(),
                     'lipides' => $ingredient->getLipides(),
@@ -127,16 +127,16 @@ class IngredientController extends AbstractController
         }
     }
 
-    #[Route('/ingredients/{nom}', name: 'delete', methods: ['DELETE'])]
-    public function deleteIngredientByNameAction(string $nom): JsonResponse
+    #[Route('/ingredients/{name}', name: 'delete', methods: ['DELETE'])]
+    public function deleteIngredientByNameAction(string $name): JsonResponse
     {
-        if (empty($nom)) {
+        if (empty($name)) {
             return new JsonResponse(['error' => 'Ingredient name is required'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            $nom = ucfirst($nom);
-            $ingredientCollection = $this->ingredientService->getIngredientByName($nom);
+            $name = ucfirst($name);
+            $ingredientCollection = $this->ingredientService->getIngredientByName($name);
 
             if ($ingredientCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No matching ingredients found'], Response::HTTP_NOT_FOUND);
@@ -165,7 +165,7 @@ class IngredientController extends AbstractController
 
         foreach ($data as $ingredientData) {
             $ingredient = new Ingredient();
-            $ingredient->setNom($ingredientData['nom']);
+            $ingredient->setName($ingredientData['name']);
             $ingredient->setUnite($ingredientData['unite']);
             $ingredient->setProteines($ingredientData['proteines']);
             $ingredient->setLipides($ingredientData['lipides']);
