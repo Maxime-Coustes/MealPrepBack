@@ -23,7 +23,7 @@ class Ingredient
     private ?float $proteins = null;
 
     #[ORM\Column]
-    private ?float $lipides = null;
+    private ?float $fat = null;
 
     #[ORM\Column]
     private ?float $glucides = null;
@@ -72,14 +72,14 @@ class Ingredient
         return $this;
     }
 
-    public function getLipides(): ?float
+    public function getFat(): ?float
     {
-        return $this->lipides;
+        return $this->fat;
     }
 
-    public function setLipides(float $lipides): static
+    public function setFat(float $fat): static
     {
-        $this->lipides = $lipides;
+        $this->fat = $fat;
 
         return $this;
     }

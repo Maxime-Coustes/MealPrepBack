@@ -30,7 +30,7 @@ class IngredientRepository extends ServiceEntityRepository
             $ingredient->setName($ingredient->getName());
             $ingredient->setUnite($ingredient->getUnite());
             $ingredient->setProteins($ingredient->getProteins());
-            $ingredient->setLipides($ingredient->getLipides());
+            $ingredient->setFat($ingredient->getFat());
             $ingredient->setGlucides($ingredient->getGlucides());
             $ingredient->setCalories($ingredient->getCalories());
 
@@ -105,7 +105,7 @@ class IngredientRepository extends ServiceEntityRepository
             $existingIngredient->setName($ingredient->getName());
             $existingIngredient->setUnite($ingredient->getUnite());
             $existingIngredient->setProteins($ingredient->getProteins());
-            $existingIngredient->setLipides($ingredient->getLipides());
+            $existingIngredient->setFat($ingredient->getFat());
             $existingIngredient->setGlucides($ingredient->getGlucides());
             $existingIngredient->setCalories($ingredient->getCalories());
 

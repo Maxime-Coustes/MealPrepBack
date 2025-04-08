@@ -38,7 +38,7 @@ class IngredientController extends AbstractController
             $ingredient->setName($ingredientData['name']);
             $ingredient->setUnite($ingredientData['unite']);
             $ingredient->setProteins($ingredientData['proteins']);
-            $ingredient->setLipides($ingredientData['lipides']);
+            $ingredient->setFat($ingredientData['fat']);
             $ingredient->setGlucides($ingredientData['glucides']);
             $ingredient->setCalories($ingredientData['calories']);
 
@@ -77,7 +77,7 @@ class IngredientController extends AbstractController
                     'name' => $ingredient->getName(),
                     'unite' => $ingredient->getUnite(),
                     'proteins' => $ingredient->getProteins(),
-                    'lipides' => $ingredient->getLipides(),
+                    'fat' => $ingredient->getFat(),
                     'glucides' => $ingredient->getGlucides(),
                     'calories' => $ingredient->getCalories(),
                 ];
@@ -112,7 +112,7 @@ class IngredientController extends AbstractController
                     'name' => $ingredient->getName(),
                     'unite' => $ingredient->getUnite(),
                     'proteins' => $ingredient->getProteins(),
-                    'lipides' => $ingredient->getLipides(),
+                    'fat' => $ingredient->getFat(),
                     'glucides' => $ingredient->getGlucides(),
                     'calories' => $ingredient->getCalories(),
                 ];
@@ -168,7 +168,7 @@ class IngredientController extends AbstractController
             $ingredient->setName($ingredientData['name']);
             $ingredient->setUnite($ingredientData['unite']);
             $ingredient->setProteins($ingredientData['proteins']);
-            $ingredient->setLipides($ingredientData['lipides']);
+            $ingredient->setFat($ingredientData['fat']);
             $ingredient->setGlucides($ingredientData['glucides']);
             $ingredient->setCalories($ingredientData['calories']);
 
