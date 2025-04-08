@@ -59,7 +59,7 @@ class IngredientService implements IngredientServiceInterface
         return $this->ingredientRepository->findAll();
     }
 
-    public function getIngredientByName(string $name): ?IngredientCollection
+    public function getIngredientsByName(string $name): ?IngredientCollection
     {
         return $this->ingredientRepository->findByName($name);
     }

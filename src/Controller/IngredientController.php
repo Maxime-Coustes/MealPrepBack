@@ -92,13 +92,13 @@ class IngredientController extends AbstractController
     }
 
     #[Route('/ingredients/{name}', name: 'getIngredientByName', methods: ['GET'])]
-    public function getIngredientByNameAction(string $name): JsonResponse
+    public function getIngredientsByNameAction(string $name): JsonResponse
     {
         $name = ucfirst($name);
 
         try {
             // Récupérer les ingrédients correspondant partiellement au name
-            $ingredientsCollection = $this->ingredientService->getIngredientByName($name);
+            $ingredientsCollection = $this->ingredientService->getIngredientsByName($name);
 
             if ($ingredientsCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
@@ -136,7 +136,7 @@ class IngredientController extends AbstractController
 
         try {
             $name = ucfirst($name);
-            $ingredientCollection = $this->ingredientService->getIngredientByName($name);
+            $ingredientCollection = $this->ingredientService->getIngredientsByName($name);
 
             if ($ingredientCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No matching ingredients found'], Response::HTTP_NOT_FOUND);
