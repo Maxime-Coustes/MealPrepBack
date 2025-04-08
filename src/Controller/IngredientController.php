@@ -39,7 +39,7 @@ class IngredientController extends AbstractController
             $ingredient->setUnit($ingredientData['unit']);
             $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setFat($ingredientData['fat']);
-            $ingredient->setGlucides($ingredientData['glucides']);
+            $ingredient->setCarbs($ingredientData['carbs']);
             $ingredient->setCalories($ingredientData['calories']);
 
             $ingredientCollection->addIngredient($ingredient);
@@ -78,7 +78,7 @@ class IngredientController extends AbstractController
                     'unit' => $ingredient->getUnit(),
                     'proteins' => $ingredient->getProteins(),
                     'fat' => $ingredient->getFat(),
-                    'glucides' => $ingredient->getGlucides(),
+                    'carbs' => $ingredient->getCarbs(),
                     'calories' => $ingredient->getCalories(),
                 ];
             }
@@ -113,7 +113,7 @@ class IngredientController extends AbstractController
                     'unit' => $ingredient->getUnit(),
                     'proteins' => $ingredient->getProteins(),
                     'fat' => $ingredient->getFat(),
-                    'glucides' => $ingredient->getGlucides(),
+                    'carbs' => $ingredient->getCarbs(),
                     'calories' => $ingredient->getCalories(),
                 ];
             }
@@ -169,7 +169,7 @@ class IngredientController extends AbstractController
             $ingredient->setUnit($ingredientData['unit']);
             $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setFat($ingredientData['fat']);
-            $ingredient->setGlucides($ingredientData['glucides']);
+            $ingredient->setCarbs($ingredientData['carbs']);
             $ingredient->setCalories($ingredientData['calories']);
 
             $ingredientCollection->addIngredient($ingredient);

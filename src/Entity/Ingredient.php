@@ -26,7 +26,7 @@ class Ingredient
     private ?float $fat = null;
 
     #[ORM\Column]
-    private ?float $glucides = null;
+    private ?float $carbs = null;
 
     #[ORM\Column]
     private ?float $calories = null;
@@ -84,14 +84,14 @@ class Ingredient
         return $this;
     }
 
-    public function getGlucides(): ?float
+    public function getCarbs(): ?float
     {
-        return $this->glucides;
+        return $this->carbs;
     }
 
-    public function setGlucides(float $glucides): static
+    public function setCarbs(float $carbs): static
     {
-        $this->glucides = $glucides;
+        $this->carbs = $carbs;
 
         return $this;
     }
