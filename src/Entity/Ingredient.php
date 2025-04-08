@@ -17,7 +17,7 @@ class Ingredient
     private ?string $name = null;
 
     #[ORM\Column(length: 10)]
-    private ?string $unite = null;
+    private ?string $unit = null;
 
     #[ORM\Column]
     private ?float $proteins = null;
@@ -48,14 +48,14 @@ class Ingredient
         return $this;
     }
 
-    public function getUnite(): ?string
+    public function getUnit(): ?string
     {
-        return $this->unite;
+        return $this->unit;
     }
 
-    public function setUnite(string $unite): static
+    public function setUnit(string $unit): static
     {
-        $this->unite = $unite;
+        $this->unit = $unit;
 
         return $this;
     }

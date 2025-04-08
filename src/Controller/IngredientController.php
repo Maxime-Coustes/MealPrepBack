@@ -36,7 +36,7 @@ class IngredientController extends AbstractController
         foreach ($data as $ingredientData) {
             $ingredient = new Ingredient();
             $ingredient->setName($ingredientData['name']);
-            $ingredient->setUnite($ingredientData['unite']);
+            $ingredient->setUnit($ingredientData['unit']);
             $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setFat($ingredientData['fat']);
             $ingredient->setGlucides($ingredientData['glucides']);
@@ -75,7 +75,7 @@ class IngredientController extends AbstractController
             foreach ($ingredientsCollection as $ingredient) {
                 $collection[] = [
                     'name' => $ingredient->getName(),
-                    'unite' => $ingredient->getUnite(),
+                    'unit' => $ingredient->getUnit(),
                     'proteins' => $ingredient->getProteins(),
                     'fat' => $ingredient->getFat(),
                     'glucides' => $ingredient->getGlucides(),
@@ -110,7 +110,7 @@ class IngredientController extends AbstractController
             foreach ($ingredientsCollection->getIngredients() as $ingredient) {
                 $data[] = [
                     'name' => $ingredient->getName(),
-                    'unite' => $ingredient->getUnite(),
+                    'unit' => $ingredient->getUnit(),
                     'proteins' => $ingredient->getProteins(),
                     'fat' => $ingredient->getFat(),
                     'glucides' => $ingredient->getGlucides(),
@@ -166,7 +166,7 @@ class IngredientController extends AbstractController
         foreach ($data as $ingredientData) {
             $ingredient = new Ingredient();
             $ingredient->setName($ingredientData['name']);
-            $ingredient->setUnite($ingredientData['unite']);
+            $ingredient->setUnit($ingredientData['unit']);
             $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setFat($ingredientData['fat']);
             $ingredient->setGlucides($ingredientData['glucides']);
