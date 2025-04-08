@@ -95,56 +95,58 @@ class IngredientController extends AbstractController
     public function getIngredientByNameAction(string $nom): JsonResponse
     {
         $nom = ucfirst($nom);
-        try {
-            // Récupérer l'ingrédient par son nom
-            $ingredient = $this->ingredientService->getIngredientByName($nom);
 
-            if (!$ingredient) {
-                return new JsonResponse(['error' => 'Ingredient not found'], JsonResponse::HTTP_NOT_FOUND);
+        try {
+            // Récupérer les ingrédients correspondant partiellement au nom
+            $ingredientsCollection = $this->ingredientService->getIngredientByName($nom);
+
+            if ($ingredientsCollection->isEmpty()) {
+                return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
             }
 
-            // Retourner les données sous forme de réponse JSON
-            $data = [
-                'nom' => $ingredient->getNom(),
-                'unite' => $ingredient->getUnite(),
-                'proteines' => $ingredient->getProteines(),
-                'lipides' => $ingredient->getLipides(),
-                'glucides' => $ingredient->getGlucides(),
-                'calories' => $ingredient->getCalories(),
-            ];
+            // Transformer la collection en tableau de données JSON
+            $data = [];
+
+            foreach ($ingredientsCollection->getIngredients() as $ingredient) {
+                $data[] = [
+                    'nom' => $ingredient->getNom(),
+                    'unite' => $ingredient->getUnite(),
+                    'proteines' => $ingredient->getProteines(),
+                    'lipides' => $ingredient->getLipides(),
+                    'glucides' => $ingredient->getGlucides(),
+                    'calories' => $ingredient->getCalories(),
+                ];
+            }
 
             return new JsonResponse($data);
         } catch (\Exception $e) {
-            // Gestion d'erreur en cas de problème
-            return new JsonResponse(['error' => 'Failed to retrieve ingredient: ' . $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(
+                ['error' => 'Failed to retrieve ingredients: ' . $e->getMessage()],
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
     #[Route('/ingredients/{nom}', name: 'delete', methods: ['DELETE'])]
     public function deleteIngredientByNameAction(string $nom): JsonResponse
     {
-        // Vérifier si le nom de l'ingrédient est fourni
         if (empty($nom)) {
             return new JsonResponse(['error' => 'Ingredient name is required'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            // Récupérer l'ingrédient à partir de son nom
-            $ingredient = $this->ingredientService->getIngredientByName($nom);
+            $nom = ucfirst($nom);
+            $ingredientCollection = $this->ingredientService->getIngredientByName($nom);
 
-            // Si l'ingrédient n'existe pas, retourner une erreur
-            if (!$ingredient) {
-                return new JsonResponse(['error' => 'Ingredient not found'], Response::HTTP_NOT_FOUND);
+            if ($ingredientCollection->isEmpty()) {
+                return new JsonResponse(['error' => 'No matching ingredients found'], Response::HTTP_NOT_FOUND);
             }
 
-            // Si l'ingrédient existe, le supprimer
-            $this->ingredientService->deleteIngredient($ingredient);
+            $this->ingredientService->deleteIngredients($ingredientCollection);
 
-            // Retourner une réponse de succès
-            return new JsonResponse(['message' => 'Ingredient deleted successfully'], Response::HTTP_OK);
+            return new JsonResponse(['message' => 'Matching ingredients deleted successfully'], Response::HTTP_OK);
         } catch (\Exception $e) {
-            // Gestion des erreurs et retour d'une réponse d'erreur générique
-            return new JsonResponse(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['error' => 'Failed to delete ingredients: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

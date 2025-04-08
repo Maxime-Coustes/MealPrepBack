@@ -8,7 +8,7 @@ interface IngredientServiceInterface
 {
     public function createIngredients(IngredientCollection $ingredients): bool;
     public function getIngredientsListAction(): array;
-    public function getIngredientByName(string $nom): ?Ingredient;
-    public function deleteIngredient(Ingredient $ingredient): void;
+    public function getIngredientByName(string $nom): ?IngredientCollection;
+    public function deleteIngredients(IngredientCollection $ingredientCollection): void;
     public function updateIngredients(IngredientCollection $ingredients): IngredientCollection;
 }

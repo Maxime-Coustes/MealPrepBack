@@ -25,6 +25,12 @@ class IngredientCollection
         return $this;
     }
 
+    public function isEmpty(): bool
+    {
+        return count($this->ingredients) === 0;
+    }
+
+
     // public function removeIngredient(Ingredient $ingredient): self
     // {
     //     $key = array_search($ingredient, $this->ingredients, true);

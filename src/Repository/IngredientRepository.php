@@ -47,16 +47,36 @@ class IngredientRepository extends ServiceEntityRepository
         return $this->ingredientRepository->findAll();
     }
 
-    public function findOneByNom(string $nom): ?Ingredient
+    public function findByNom(string $nom): ?IngredientCollection
     {
-        return $this->findOneBy(['nom' => $nom]);
+        // return $this->findOneBy(['nom' => $nom]);
+        // return $this->createQueryBuilder('i')
+        // ->where('i.nom LIKE :nom')
+        // ->setParameter('nom', $nom . '%')
+        // ->getQuery()
+        // ->getOneOrNullResult();
+        $results = $this->createQueryBuilder('i')
+            ->where('LOWER(i.nom) LIKE LOWER(:nom)')
+            ->setParameter('nom', $nom . '%')
+            ->getQuery()
+            ->getResult();
+
+        $ingredientsCollection = new IngredientCollection();
+
+        foreach ($results as $ingredient) {
+            $ingredientsCollection->addIngredient($ingredient);
+        }
+
+        return $ingredientsCollection;
     }
 
-    public function deleteIngredient(Ingredient $ingredient): void 
+    public function deleteIngredients(IngredientCollection $ingredientCollection): void
     {
         $em = $this->getEntityManager();
-
-        $em->remove($ingredient);
+        foreach ($ingredientCollection->getIngredients() as $ingredient) {
+            $em->remove($ingredient);
+        }
+    
         $em->flush();
     }
 

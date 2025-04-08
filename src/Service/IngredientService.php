@@ -6,7 +6,6 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
 use App\Repository\IngredientRepository;
 use App\Interface\IngredientServiceInterface;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class IngredientService implements IngredientServiceInterface
 {
@@ -60,14 +59,14 @@ class IngredientService implements IngredientServiceInterface
         return $this->ingredientRepository->findAll();
     }
 
-    public function getIngredientByName(string $nom): ?Ingredient
+    public function getIngredientByName(string $nom): ?IngredientCollection
     {
-        return $this->ingredientRepository->findOneByNom($nom);
+        return $this->ingredientRepository->findByNom($nom);
     }
 
-    public function deleteIngredient(Ingredient $ingredient): void
+    public function deleteIngredients(IngredientCollection $ingredientCollection): void
     {
-        $this->ingredientRepository->deleteIngredient($ingredient);
+        $this->ingredientRepository->deleteIngredients($ingredientCollection);
     }
 
     public function updateIngredients(IngredientCollection $ingredientCollection): IngredientCollection
