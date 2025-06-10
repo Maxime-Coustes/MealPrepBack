@@ -1,0 +1,25 @@
+meta {
+  name: CreateIngredientsAction
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/ingredients
+  body: json
+  auth: none
+}
+
+body:json {
+  [
+        {
+      "name": "crevetteWW",
+      "unit": "100g",
+      "proteins": 23.0,
+      "fat": 1.7,
+      "carbs": 1.3,
+      "calories": 119
+    }
+  ]
+  
+}

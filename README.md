@@ -58,3 +58,10 @@ L'API utilise JSON Web Tokens (JWT) pour l'authentification des utilisateurs. Po
 
 Autres endpoints
 Les autres endpoints de l'API (comme ceux pour gérer les ingrédients, produits, recettes, etc.) seront ajoutés et documentés au fur et à mesure de l'avancement du projet.
+
+
+# Créer une migration (après changement de valeur d'une entity par exemple)
+php bin/console doctrine:migrations:generate
+
+# Exécuter la migration
+php bin/console doctrine:migrations:migrate
