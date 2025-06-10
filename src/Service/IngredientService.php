@@ -54,7 +54,7 @@ class IngredientService implements IngredientServiceInterface
     }
 
 
-    public function getIngredientsListAction(): array
+    public function getIngredientsList(): array
     {
         return $this->ingredientRepository->findAll();
     }

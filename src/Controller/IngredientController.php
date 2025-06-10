@@ -68,7 +68,7 @@ class IngredientController extends AbstractController
     {
         try {
             // Récupérer tous les ingrédients
-            $ingredientsCollection = $this->ingredientService->getIngredientsListAction();
+            $ingredientsCollection = $this->ingredientService->getIngredientsList();
 
             // Préparer les données pour la réponse
             $collection = [];
