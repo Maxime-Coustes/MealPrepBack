@@ -31,7 +31,7 @@ class IngredientRepository extends ServiceEntityRepository
             $ingredient->setUnit($ingredient->getUnit());
             $ingredient->setProteins($ingredient->getProteins());
             $ingredient->setFat($ingredient->getFat());
-            $ingredient->setGlucides($ingredient->getGlucides());
+            $ingredient->setCarbs($ingredient->getCarbs());
             $ingredient->setCalories($ingredient->getCalories());
 
             // Persister directement chaque ingrédient
