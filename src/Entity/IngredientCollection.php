@@ -2,7 +2,12 @@
 
 namespace App\Entity;
 
-class IngredientCollection
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
+use Traversable;
+
+class IngredientCollection implements Countable, IteratorAggregate
 {
     private array $ingredients = [];
 
@@ -28,6 +33,34 @@ class IngredientCollection
     public function isEmpty(): bool
     {
         return count($this->ingredients) === 0;
+    }
+
+    public function getNames(): array
+    {
+        return array_map(fn(Ingredient $i) => $i->getName(), $this->ingredients);
+    }
+
+    public function count(): int
+    {
+        return count($this->ingredients);
+    }
+
+    // Pour qu'elle soit iterable aussi (foreach etc.)
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->ingredients);
+    }
+
+    /** avoid 
+     * foreach ($ingredients as $ingredient) {
+     *   $collection->addIngredient($ingredient);
+     *} each time
+     */
+    public function addMany(array $ingredients): void
+    {
+        foreach ($ingredients as $ingredient) {
+            $this->addIngredient($ingredient);
+        }
     }
 
 

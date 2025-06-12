@@ -44,19 +44,15 @@ class IngredientController extends AbstractController
 
             $ingredientCollection->addIngredient($ingredient);
         }
-
         try {
-            // Appeler le service une seule fois et récupérer le résultat
-            $success = $this->ingredientService->createIngredients($ingredientCollection);
+            $result = $this->ingredientService->createIngredients($ingredientCollection);
 
-            // Gérer le résultat en fonction de la réponse
-            if ($success) {
-                $names = array_column($data, 'name');
-                return new JsonResponse(['message' => 'Ingredients created successfully', 'ingredients' => $names], JsonResponse::HTTP_CREATED);
-            } else {
-                $names = array_column($data, 'name');
-                return new JsonResponse(['message' => 'Ingredient already exists', 'ingredients' => $names], JsonResponse::HTTP_CONFLICT);
-            }
+            return new JsonResponse([
+                'message' => 'Ingredient creation result',
+                'created' => array_map(fn($i) => $i->getName(), $result['created']->getIngredients()),
+                'existing' => array_map(fn($i) => $i->getName(), $result['existing']->getIngredients()),
+
+            ], count($result['created']) > 0 ? JsonResponse::HTTP_CREATED : JsonResponse::HTTP_CONFLICT);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }

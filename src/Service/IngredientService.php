@@ -16,31 +16,29 @@ class IngredientService implements IngredientServiceInterface
         $this->ingredientRepository = $ingredientRepository;
     }
 
-    public function createIngredients(IngredientCollection $ingredientsCollection): bool
+    public function createIngredients(IngredientCollection $ingredientsCollection): array
     {
         $newIngredientCollection = new IngredientCollection();
-        $ingredientExists = false;
-
+        $existing = new IngredientCollection();
+        
         foreach ($ingredientsCollection->getIngredients() as $ingredient) {
             // Vérifie si l'ingrédient existe déjà
             $exist = $this->checkIfExists($ingredient);
-
+            
             if ($exist) {
-                $ingredientExists = true; // Au moins un ingrédient existe déjà
+                $existing->addIngredient($ingredient);
+                continue;
             } else {
                 // Si l'ingrédient n'existe pas, on l'ajoute à la nouvelle collection
                 $newIngredientCollection->addIngredient($ingredient);
+                $this->ingredientRepository->createIngredients($newIngredientCollection);
             }
         }
 
-        // Si count() > 0 alors nous avons de nouveaux ingrédients et on les persist
-        if (count($newIngredientCollection->getIngredients()) > 0) {
-            $this->ingredientRepository->createIngredients($newIngredientCollection);
-            return true;
-        }
-
-        // Si tous les ingrédients existaient déjà, on retourne false
-        return !$ingredientExists;
+        return [
+            'created' => $newIngredientCollection,
+            'existing' => $existing,
+        ];
     }
 
 
