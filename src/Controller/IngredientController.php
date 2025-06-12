@@ -182,7 +182,11 @@ class IngredientController extends AbstractController
                 'ingredients' => $updatedIngredients
             ], JsonResponse::HTTP_OK);
         } catch (NotFoundHttpException $e) {
-            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_NOT_FOUND);
+            return new JsonResponse([
+                'status' => 404,
+                'error' => $e->getMessage(),
+                'suggestions' => ['Would you like to create it?']
+            ], 404);
         }
     }
 }
