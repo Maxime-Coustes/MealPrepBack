@@ -2,7 +2,10 @@
 
 namespace App\Entity;
 
-class IngredientCollection
+use Countable;
+use IteratorAggregate;
+
+class IngredientCollection implements Countable, IteratorAggregate
 {
     private array $ingredients = [];
 
@@ -30,6 +33,20 @@ class IngredientCollection
         return count($this->ingredients) === 0;
     }
 
+    public function getNames(): array
+    {
+        return array_map(fn(Ingredient $i) => $i->getName(), $this->ingredients);
+    }
+
+    public function count(): int
+    {
+        return count($this->ingredients);
+    }
+    
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->ingredients);
+    }
 
     // public function removeIngredient(Ingredient $ingredient): self
     // {
@@ -39,4 +56,5 @@ class IngredientCollection
     //     }
     //     return $this;
     // }
+
 }
