@@ -70,54 +70,39 @@ class IngredientRepository extends ServiceEntityRepository
         return $ingredientsCollection;
     }
 
+    public function findOneByName(string $name): ?Ingredient
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.name = :name')
+            ->setParameter('name', $name)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+
     public function deleteIngredients(IngredientCollection $ingredientCollection): void
     {
         $em = $this->getEntityManager();
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
             $em->remove($ingredient);
         }
-    
+
         $em->flush();
     }
 
-    /**
-     * Met à jour une collection d'ingrédients dans la base de données.
-     *
-     * @param IngredientCollection $ingredientCollection
-     * @return IngredientCollection Liste des ingrédients mis à jour
-     */
     public function updateIngredients(IngredientCollection $ingredientCollection): IngredientCollection
     {
         $em = $this->getEntityManager();
-        $updatedIngredients = new IngredientCollection();
 
-        // Parcours chaque ingrédient dans la collection
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
-            $existingIngredient = $this->findOneByName($ingredient->getName());  // Trouve l'ingrédient par son name
-
-            if (!$existingIngredient) {
-                // faire un create plutot ?
-                // $this->createIngredients($ingredient);
-                throw new NotFoundHttpException('Ingredient not found with name ' . $ingredient->getName());
-            }
-
-            // Met à jour les propriétés de l'ingrédient
-            $existingIngredient->setName($ingredient->getName());
-            $existingIngredient->setUnit($ingredient->getUnit());
-            $existingIngredient->setProteins($ingredient->getProteins());
-            $existingIngredient->setFat($ingredient->getFat());
-            $existingIngredient->setGlucides($ingredient->getGlucides());
-            $existingIngredient->setCalories($ingredient->getCalories());
-
-            // Sauvegarde l'ingrédient mis à jour
-            $em->flush();
-
-            // Ajoute l'ingrédient mis à jour à la collection
-            $updatedIngredients->addIngredient($existingIngredient);
+            $em->persist($ingredient); 
         }
 
-        return $updatedIngredients;
+        $em->flush();
+
+        return $ingredientCollection;
     }
+
 
     //    /**
     //     * @return Ingredient[] Returns an array of Ingredient objects

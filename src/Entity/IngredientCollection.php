@@ -3,8 +3,9 @@
 namespace App\Entity;
 
 use Countable;
+use IteratorAggregate;
 
-class IngredientCollection implements Countable
+class IngredientCollection implements Countable, IteratorAggregate
 {
     private array $ingredients = [];
 
@@ -40,6 +41,11 @@ class IngredientCollection implements Countable
     public function count(): int
     {
         return count($this->ingredients);
+    }
+    
+    public function getIterator(): \Traversable
+    {
+        return new \ArrayIterator($this->ingredients);
     }
 
     // public function removeIngredient(Ingredient $ingredient): self

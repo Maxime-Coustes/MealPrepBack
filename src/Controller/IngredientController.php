@@ -151,12 +151,10 @@ class IngredientController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        // Vérifie si les données sont vides
         if (empty($data)) {
             return new JsonResponse(['error' => 'No data provided'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        // Crée une collection d'ingrédients à partir des données
         $ingredientCollection = new IngredientCollection();
 
         foreach ($data as $ingredientData) {
@@ -172,17 +170,44 @@ class IngredientController extends AbstractController
         }
 
         try {
-            $updatedIngredients = $this->ingredientService->updateIngredients($ingredientCollection);
+            $result = $this->ingredientService->updateIngredients($ingredientCollection);
+
+            // Préparer les suggestions pour les ingrédients non trouvés
+            $suggestions = [];
+            $notFoundNames = array_map(fn(Ingredient $i) => $i->getName(), $result['not_found']->getIngredients());
+
+            foreach ($ingredientCollection as $ingredient) {
+                if (in_array($ingredient->getName(), $notFoundNames, true)) {
+                    $suggestions[] = [
+                        'message' => 'Ingredient not found. Would you like to create it?',
+                        'ingredient' => [
+                            'name' => $ingredient->getName(),
+                            'unit' => $ingredient->getUnit(),
+                            'proteins' => $ingredient->getProteins(),
+                            'fat' => $ingredient->getFat(),
+                            'carbs' => $ingredient->getCarbs(),
+                            'calories' => $ingredient->getCalories()
+                        ]
+                    ];
+                }
+            }
+
+            $statusCode = JsonResponse::HTTP_OK;
+            $message = 'Ingredient update result';
+            $updatedNames = array_map(fn(Ingredient $i) => $i->getName(),$result['updated']->getIngredients());
+
+            if (count($updatedNames) === 0 && count($notFoundNames) > 0) {
+                $message = 'No ingredients were updated. Some ingredients were not found.';
+            }
+
             return new JsonResponse([
-                'message' => 'Ingredients updated successfully',
-                'ingredients' => $updatedIngredients
-            ], JsonResponse::HTTP_OK);
-        } catch (NotFoundHttpException $e) {
-            return new JsonResponse([
-                'status' => 404,
-                'error' => $e->getMessage(),
-                'suggestions' => ['Would you like to create it?']
-            ], 404);
+                'message' => $message,
+                'updated' => $updatedNames,
+                'not_found' => $notFoundNames,
+                'suggestions' => $suggestions
+            ], $statusCode);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

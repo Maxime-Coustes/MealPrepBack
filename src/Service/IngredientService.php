@@ -20,11 +20,11 @@ class IngredientService implements IngredientServiceInterface
     {
         $newIngredientCollection = new IngredientCollection();
         $existing = new IngredientCollection();
-        
+
         foreach ($ingredientsCollection->getIngredients() as $ingredient) {
             // Vérifie si l'ingrédient existe déjà
             $exist = $this->checkIfExists($ingredient);
-            
+
             if ($exist) {
                 $existing->addIngredient($ingredient);
                 continue;
@@ -67,9 +67,44 @@ class IngredientService implements IngredientServiceInterface
         $this->ingredientRepository->deleteIngredients($ingredientCollection);
     }
 
-    public function updateIngredients(IngredientCollection $ingredientCollection): IngredientCollection
+    public function updateIngredients(IngredientCollection $ingredients): array
     {
-        $updatedIngredients = $this->ingredientRepository->updateIngredients($ingredientCollection);
-        return $updatedIngredients;
+        $toUpdate = new IngredientCollection();
+        $notFound = new IngredientCollection();
+
+        foreach ($ingredients as $ingredient) {
+            $existing = $this->ingredientRepository->findOneByName($ingredient->getName());
+            if (!$existing) {
+                $notFound->addIngredient($ingredient);
+                continue;
+            }
+
+            // Vérifie s'il y a un changement
+            $hasChanged =
+                $existing->getUnit() !== $ingredient->getUnit() ||
+                $existing->getProteins() !== $ingredient->getProteins() ||
+                $existing->getFat() !== $ingredient->getFat() ||
+                $existing->getCarbs() !== $ingredient->getCarbs() ||
+                $existing->getCalories() !== $ingredient->getCalories();
+
+            if (!$hasChanged) {
+                continue; // Ne pas l’ajouter à la liste à mettre à jour
+            }
+
+            // On met à jour les valeurs de l'entité existante
+            $existing->setUnit($ingredient->getUnit());
+            $existing->setProteins($ingredient->getProteins());
+            $existing->setFat($ingredient->getFat());
+            $existing->setCarbs($ingredient->getCarbs());
+            $existing->setCalories($ingredient->getCalories());
+            $toUpdate->addIngredient($existing);
+        }
+
+        $this->ingredientRepository->updateIngredients($toUpdate);
+
+        return [
+            'updated' => $toUpdate,
+            'not_found' => $notFound,
+        ];
     }
 }
