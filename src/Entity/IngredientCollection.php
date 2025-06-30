@@ -2,7 +2,9 @@
 
 namespace App\Entity;
 
-class IngredientCollection
+use Countable;
+
+class IngredientCollection implements Countable
 {
     private array $ingredients = [];
 
@@ -30,6 +32,15 @@ class IngredientCollection
         return count($this->ingredients) === 0;
     }
 
+    public function getNames(): array
+    {
+        return array_map(fn(Ingredient $i) => $i->getName(), $this->ingredients);
+    }
+
+    public function count(): int
+    {
+        return count($this->ingredients);
+    }
 
     // public function removeIngredient(Ingredient $ingredient): self
     // {
@@ -39,4 +50,5 @@ class IngredientCollection
     //     }
     //     return $this;
     // }
+
 }
