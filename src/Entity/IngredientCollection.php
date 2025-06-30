@@ -3,9 +3,8 @@
 namespace App\Entity;
 
 use Countable;
-use IteratorAggregate;
 
-class IngredientCollection
+class IngredientCollection implements Countable
 {
     private array $ingredients = [];
 
@@ -51,4 +50,5 @@ class IngredientCollection
     //     }
     //     return $this;
     // }
+
 }
