@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class IngredientController extends AbstractController
@@ -35,7 +34,7 @@ class IngredientController extends AbstractController
 
         foreach ($data as $ingredientData) {
             $ingredient = new Ingredient();
-            $ingredient->setName($ingredientData['name']);
+            $ingredient->setName(ucfirst($ingredientData['name']));
             $ingredient->setUnit($ingredientData['unit']);
             $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setFat($ingredientData['fat']);
@@ -47,12 +46,18 @@ class IngredientController extends AbstractController
         try {
             $result = $this->ingredientService->createIngredients($ingredientCollection);
 
-            return new JsonResponse([
-                'message' => 'Ingredient creation result',
-                'created' => array_map(fn($i) => $i->getName(), $result['created']->getIngredients()),
-                'existing' => array_map(fn($i) => $i->getName(), $result['existing']->getIngredients()),
+            $createdNames = array_map(fn($i) => $i->getName(), $result['created']->getIngredients());
+            $existingNames = array_map(fn($i) => $i->getName(), $result['existing']->getIngredients());
 
-            ], count($result['created']) > 0 ? JsonResponse::HTTP_CREATED : JsonResponse::HTTP_CONFLICT);
+            $isConflict = count($createdNames) === 0;
+
+            return new JsonResponse([
+                'message' => $isConflict
+                    ? 'No ingredient created: all provided ingredients already exist (conflict).'
+                    : 'Ingredient creation result.',
+                'created' => $createdNames,
+                'existing' => $existingNames,
+            ], $isConflict ? JsonResponse::HTTP_CONFLICT : JsonResponse::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -87,14 +92,38 @@ class IngredientController extends AbstractController
         }
     }
 
-    #[Route('/ingredients/{name}', name: 'getIngredientByName', methods: ['GET'])]
-    public function getIngredientsByNameAction(string $name): JsonResponse
+    #[Route('/ingredients/single/{name}', name: 'getSingleIngredientByName', methods: ['GET'])]
+    public function getSingleIngredientsByNameAction(string $name): JsonResponse
+    {
+        $name = ucfirst($name);
+        try {
+            $data = [];
+            $ingredient = $this->ingredientService->findOneByName($name);
+            $data[] = [
+                'name' => $ingredient->getName(),
+                'unit' => $ingredient->getUnit(),
+                'proteins' => $ingredient->getProteins(),
+                'fat' => $ingredient->getFat(),
+                'carbs' => $ingredient->getCarbs(),
+                'calories' => $ingredient->getCalories(),
+            ];
+            return new JsonResponse($data);
+        } catch (\Exception $e) {
+            return new JsonResponse(
+                ['error' => 'Failed to retrieve ingredients: ' . $e->getMessage()],
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    #[Route('/ingredients/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
+    public function getMultipleIngredientsByNameAction(string $name): JsonResponse
     {
         $name = ucfirst($name);
 
         try {
             // Récupérer les ingrédients correspondant partiellement au name
-            $ingredientsCollection = $this->ingredientService->getIngredientsByName($name);
+            $ingredientsCollection = $this->ingredientService->getMultipleIngredientsByName($name);
 
             if ($ingredientsCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
@@ -132,7 +161,7 @@ class IngredientController extends AbstractController
 
         try {
             $name = ucfirst($name);
-            $ingredientCollection = $this->ingredientService->getIngredientsByName($name);
+            $ingredientCollection = $this->ingredientService->getMultipleIngredientsByName($name);
 
             if ($ingredientCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No matching ingredients found'], Response::HTTP_NOT_FOUND);
@@ -194,7 +223,7 @@ class IngredientController extends AbstractController
 
             $statusCode = JsonResponse::HTTP_OK;
             $message = 'Ingredient update result';
-            $updatedNames = array_map(fn(Ingredient $i) => $i->getName(),$result['updated']->getIngredients());
+            $updatedNames = array_map(fn(Ingredient $i) => $i->getName(), $result['updated']->getIngredients());
 
             if (count($updatedNames) === 0 && count($notFoundNames) > 0) {
                 $message = 'No ingredients were updated. Some ingredients were not found.';
