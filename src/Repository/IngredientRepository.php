@@ -6,7 +6,6 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @extends ServiceEntityRepository<Ingredient>
@@ -47,7 +46,7 @@ class IngredientRepository extends ServiceEntityRepository
         return $this->ingredientRepository->findAll();
     }
 
-    public function findByName(string $name): ?IngredientCollection
+    public function findMultipleByName(string $name): ?IngredientCollection
     {
         // return $this->findOneBy(['name' => $name]);
         // return $this->createQueryBuilder('i')

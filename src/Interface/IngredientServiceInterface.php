@@ -7,7 +7,7 @@ interface IngredientServiceInterface
 {
     public function createIngredients(IngredientCollection $ingredients): array;
     public function getIngredientsList(): array;
-    public function getIngredientsByName(string $name): ?IngredientCollection;
+    public function getMultipleIngredientsByName(string $name): ?IngredientCollection;
     public function deleteIngredients(IngredientCollection $ingredientCollection): void;
     public function updateIngredients(IngredientCollection $ingredients): array;
 }
