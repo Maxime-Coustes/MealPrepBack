@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class IngredientController extends AbstractController
@@ -87,14 +86,14 @@ class IngredientController extends AbstractController
         }
     }
 
-    #[Route('/ingredients/{name}', name: 'getIngredientByName', methods: ['GET'])]
-    public function getIngredientsByNameAction(string $name): JsonResponse
+    #[Route('/ingredients/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
+    public function getMultipleIngredientsByNameAction(string $name): JsonResponse
     {
         $name = ucfirst($name);
 
         try {
             // Récupérer les ingrédients correspondant partiellement au name
-            $ingredientsCollection = $this->ingredientService->getIngredientsByName($name);
+            $ingredientsCollection = $this->ingredientService->getMultipleIngredientsByName($name);
 
             if ($ingredientsCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
@@ -132,7 +131,7 @@ class IngredientController extends AbstractController
 
         try {
             $name = ucfirst($name);
-            $ingredientCollection = $this->ingredientService->getIngredientsByName($name);
+            $ingredientCollection = $this->ingredientService->getMultipleIngredientsByName($name);
 
             if ($ingredientCollection->isEmpty()) {
                 return new JsonResponse(['error' => 'No matching ingredients found'], Response::HTTP_NOT_FOUND);

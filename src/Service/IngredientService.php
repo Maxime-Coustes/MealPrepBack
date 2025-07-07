@@ -57,9 +57,9 @@ class IngredientService implements IngredientServiceInterface
         return $this->ingredientRepository->findAll();
     }
 
-    public function getIngredientsByName(string $name): ?IngredientCollection
+    public function getMultipleIngredientsByName(string $name): ?IngredientCollection
     {
-        return $this->ingredientRepository->findByName($name);
+        return $this->ingredientRepository->findMultipleByName($name);
     }
 
     public function deleteIngredients(IngredientCollection $ingredientCollection): void
