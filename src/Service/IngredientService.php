@@ -67,13 +67,18 @@ class IngredientService implements IngredientServiceInterface
         $this->ingredientRepository->deleteIngredients($ingredientCollection);
     }
 
+    public function findOneByName(string $ingredientName): ?Ingredient
+    {
+        return $this->ingredientRepository->findOneByName($ingredientName);
+    }
+
     public function updateIngredients(IngredientCollection $ingredients): array
     {
         $toUpdate = new IngredientCollection();
         $notFound = new IngredientCollection();
 
         foreach ($ingredients as $ingredient) {
-            $existing = $this->ingredientRepository->findOneByName($ingredient->getName());
+            $existing = $this->findOneByName($ingredient->getName());
             if (!$existing) {
                 $notFound->addIngredient($ingredient);
                 continue;

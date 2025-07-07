@@ -34,7 +34,7 @@ class IngredientController extends AbstractController
 
         foreach ($data as $ingredientData) {
             $ingredient = new Ingredient();
-            $ingredient->setName($ingredientData['name']);
+            $ingredient->setName(ucfirst($ingredientData['name']));
             $ingredient->setUnit($ingredientData['unit']);
             $ingredient->setProteins($ingredientData['proteins']);
             $ingredient->setFat($ingredientData['fat']);
@@ -45,7 +45,6 @@ class IngredientController extends AbstractController
         }
         try {
             $result = $this->ingredientService->createIngredients($ingredientCollection);
-
             return new JsonResponse([
                 'message' => 'Ingredient creation result',
                 'created' => array_map(fn($i) => $i->getName(), $result['created']->getIngredients()),
@@ -83,6 +82,30 @@ class IngredientController extends AbstractController
         } catch (\Exception $e) {
             // Gestion d'erreur en cas de problème
             return new JsonResponse(['error' => 'Failed to retrieve ingredients: ' . $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/ingredients/single/{name}', name: 'getSingleIngredientByName', methods: ['GET'])]
+    public function getSingleIngredientsByNameAction(string $name): JsonResponse
+    {
+        $name = ucfirst($name);
+        try {
+            $data = [];
+            $ingredient = $this->ingredientService->findOneByName($name);
+            $data[] = [
+                'name' => $ingredient->getName(),
+                'unit' => $ingredient->getUnit(),
+                'proteins' => $ingredient->getProteins(),
+                'fat' => $ingredient->getFat(),
+                'carbs' => $ingredient->getCarbs(),
+                'calories' => $ingredient->getCalories(),
+            ];
+            return new JsonResponse($data);
+        } catch (\Exception $e) {
+            return new JsonResponse(
+                ['error' => 'Failed to retrieve ingredients: ' . $e->getMessage()],
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -193,7 +216,7 @@ class IngredientController extends AbstractController
 
             $statusCode = JsonResponse::HTTP_OK;
             $message = 'Ingredient update result';
-            $updatedNames = array_map(fn(Ingredient $i) => $i->getName(),$result['updated']->getIngredients());
+            $updatedNames = array_map(fn(Ingredient $i) => $i->getName(), $result['updated']->getIngredients());
 
             if (count($updatedNames) === 0 && count($notFoundNames) > 0) {
                 $message = 'No ingredients were updated. Some ingredients were not found.';
