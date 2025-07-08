@@ -24,15 +24,6 @@ class IngredientRepository extends ServiceEntityRepository
         $em = $this->getEntityManager();
 
         foreach ($ingredientsCollection->getIngredients() as $ingredient) {
-
-            // Utilisation des données du tableau associatif pour remplir l'objet
-            $ingredient->setName($ingredient->getName());
-            $ingredient->setUnit($ingredient->getUnit());
-            $ingredient->setProteins($ingredient->getProteins());
-            $ingredient->setFat($ingredient->getFat());
-            $ingredient->setCarbs($ingredient->getCarbs());
-            $ingredient->setCalories($ingredient->getCalories());
-
             // Persister directement chaque ingrédient
             $em->persist($ingredient);
         }
@@ -48,15 +39,9 @@ class IngredientRepository extends ServiceEntityRepository
 
     public function findMultipleByName(string $name): ?IngredientCollection
     {
-        // return $this->findOneBy(['name' => $name]);
-        // return $this->createQueryBuilder('i')
-        // ->where('i.name LIKE :name')
-        // ->setParameter('name', $name . '%')
-        // ->getQuery()
-        // ->getOneOrNullResult();
         $results = $this->createQueryBuilder('i')
             ->where('LOWER(i.name) LIKE LOWER(:name)')
-            ->setParameter('name', $name . '%')
+            ->setParameter('name', '%' . $name . '%')
             ->getQuery()
             ->getResult();
 

@@ -75,6 +75,7 @@ class IngredientController extends AbstractController
             $collection = [];
             foreach ($ingredientsCollection as $ingredient) {
                 $collection[] = [
+                    'id' => $ingredient->getId(),
                     'name' => $ingredient->getName(),
                     'unit' => $ingredient->getUnit(),
                     'proteins' => $ingredient->getProteins(),
@@ -99,6 +100,10 @@ class IngredientController extends AbstractController
         try {
             $data = [];
             $ingredient = $this->ingredientService->findOneByName($name);
+
+            if (!$ingredient) {
+                return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
+            }
             $data[] = [
                 'name' => $ingredient->getName(),
                 'unit' => $ingredient->getUnit(),
