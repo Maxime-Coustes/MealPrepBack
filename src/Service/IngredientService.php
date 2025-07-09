@@ -27,7 +27,6 @@ class IngredientService implements IngredientServiceInterface
 
             if ($exist) {
                 $existing->addIngredient($ingredient);
-                continue;
             } else {
                 // Si l'ingrédient n'existe pas, on l'ajoute à la nouvelle collection
                 $newIngredientCollection->addIngredient($ingredient);

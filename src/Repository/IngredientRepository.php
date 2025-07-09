@@ -13,6 +13,10 @@ use Doctrine\Persistence\ManagerRegistry;
 // DAO
 class IngredientRepository extends ServiceEntityRepository
 {
+
+    /**
+     * ManagerRegistry allowed me to access to find($id), findAll(), findBy([...])...
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Ingredient::class);
@@ -20,15 +24,13 @@ class IngredientRepository extends ServiceEntityRepository
 
     public function createIngredients(IngredientCollection $ingredientsCollection): void
     {
-        $em = $this->getEntityManager();
-
         foreach ($ingredientsCollection->getIngredients() as $ingredient) {
             // Persister directement chaque ingrédient
-            $em->persist($ingredient);
+            $this->getEntityManager()->persist($ingredient);
         }
 
         // Sauvegarde en base après avoir persisté tous les objets
-        $em->flush();
+        $this->getEntityManager()->flush();
     }
 
     public function getAllIngredients(): array
@@ -65,59 +67,30 @@ class IngredientRepository extends ServiceEntityRepository
 
     public function deleteMultipleIngredients(IngredientCollection $ingredientCollection): void
     {
-        $em = $this->getEntityManager();
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
-            $em->remove($ingredient);
+            $this->getEntityManager()->remove($ingredient);
         }
 
-        $em->flush();
+        $this->getEntityManager()->flush();
     }
 
     public function deleteSingleIngredientById(Ingredient $ingredient): void
     {
-        $em = $this->getEntityManager();
 
-            $em->remove($ingredient);
-            $em->flush();
+        $this->getEntityManager()->remove($ingredient);
+        $this->getEntityManager()->flush();
     }
 
 
     public function updateIngredients(IngredientCollection $ingredientCollection): IngredientCollection
     {
-        $em = $this->getEntityManager();
 
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
-            $em->persist($ingredient);
+            $this->getEntityManager()->persist($ingredient);
         }
 
-        $em->flush();
+        $this->getEntityManager()->flush();
 
         return $ingredientCollection;
     }
-
-
-    //    /**
-    //     * @return Ingredient[] Returns an array of Ingredient objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('i.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Ingredient
-    //    {
-    //        return $this->createQueryBuilder('i')
-    //            ->andWhere('i.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
