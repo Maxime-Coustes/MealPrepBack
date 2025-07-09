@@ -20,7 +20,6 @@ class IngredientRepository extends ServiceEntityRepository
 
     public function createIngredients(IngredientCollection $ingredientsCollection): void
     {
-        // dd($ingredientsCollection);
         $em = $this->getEntityManager();
 
         foreach ($ingredientsCollection->getIngredients() as $ingredient) {
