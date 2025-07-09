@@ -64,7 +64,7 @@ class IngredientRepository extends ServiceEntityRepository
     }
 
 
-    public function deleteIngredients(IngredientCollection $ingredientCollection): void
+    public function deleteMultipleIngredients(IngredientCollection $ingredientCollection): void
     {
         $em = $this->getEntityManager();
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
@@ -74,12 +74,21 @@ class IngredientRepository extends ServiceEntityRepository
         $em->flush();
     }
 
+    public function deleteSingleIngredientById(Ingredient $ingredient): void
+    {
+        $em = $this->getEntityManager();
+
+            $em->remove($ingredient);
+            $em->flush();
+    }
+
+
     public function updateIngredients(IngredientCollection $ingredientCollection): IngredientCollection
     {
         $em = $this->getEntityManager();
 
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
-            $em->persist($ingredient); 
+            $em->persist($ingredient);
         }
 
         $em->flush();

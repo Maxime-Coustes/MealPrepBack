@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
-use App\Service\IngredientService;
+use App\Interface\IngredientServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,7 +15,7 @@ class IngredientController extends AbstractController
 {
     private $ingredientService;
 
-    public function __construct(IngredientService $ingredientService)
+    public function __construct(IngredientServiceInterface $ingredientService)
     {
         $this->ingredientService = $ingredientService;
     }
@@ -159,8 +159,42 @@ class IngredientController extends AbstractController
         }
     }
 
-    #[Route('/ingredients/{name}', name: 'delete', methods: ['DELETE'])]
-    public function deleteIngredientByNameAction(string $name): JsonResponse
+    #[Route('/ingredients/single/{id}', name: 'deleteSingleIngredientById', methods: ['DELETE'])]
+    public function deleteSingleIngredientByIdAction(int $id): JsonResponse
+    {
+        if (empty($id)) {
+            return new JsonResponse(['error' => 'Ingredient id is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $ingredient = $this->ingredientService->findOneById($id);
+
+        try {
+            if (!$ingredient) {
+                return new JsonResponse(['error' => 'No matching ingredients found'], Response::HTTP_NOT_FOUND);
+            }
+
+            // On récupère les données AVANT suppression
+            $ingredientData = [
+                'id' => $ingredient->getId(),
+                'name' => $ingredient->getName(),
+            ];
+
+            $this->ingredientService->deleteSingleIngredientById($ingredient);
+
+            return new JsonResponse([
+                'message' => 'Ingredient deleted successfully',
+                'ingredient' => $ingredientData
+            ], Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Failed to delete ingredient: ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    #[Route('/ingredients/{name}', name: 'deleteMultipleIngredientsByName', methods: ['DELETE'])]
+    public function deleteMultipleIngredientsByNameAction(string $name): JsonResponse
     {
         if (empty($name)) {
             return new JsonResponse(['error' => 'Ingredient name is required'], Response::HTTP_BAD_REQUEST);
@@ -174,7 +208,7 @@ class IngredientController extends AbstractController
                 return new JsonResponse(['error' => 'No matching ingredients found'], Response::HTTP_NOT_FOUND);
             }
 
-            $this->ingredientService->deleteIngredients($ingredientCollection);
+            $this->ingredientService->deleteMultipleIngredients($ingredientCollection);
 
             return new JsonResponse(['message' => 'Matching ingredients deleted successfully'], Response::HTTP_OK);
         } catch (\Exception $e) {
