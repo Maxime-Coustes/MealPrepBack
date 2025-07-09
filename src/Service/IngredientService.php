@@ -78,14 +78,23 @@ class IngredientService implements IngredientServiceInterface
         $notFound = new IngredientCollection();
 
         foreach ($ingredients as $ingredient) {
-            $existing = $this->findOneByName($ingredient->getName());
+            $id = $ingredient->getId();
+
+            if ($id === null) {
+                $notFound->addIngredient($ingredient);
+                continue;
+            }
+
+            $existing = $this->ingredientRepository->find($id);
+
             if (!$existing) {
                 $notFound->addIngredient($ingredient);
                 continue;
             }
 
-            // Vérifie s'il y a un changement
+            // Vérifie si un champ a réellement changé
             $hasChanged =
+                $existing->getName() !== $ingredient->getName() ||
                 $existing->getUnit() !== $ingredient->getUnit() ||
                 $existing->getProteins() !== $ingredient->getProteins() ||
                 $existing->getFat() !== $ingredient->getFat() ||
@@ -93,15 +102,18 @@ class IngredientService implements IngredientServiceInterface
                 $existing->getCalories() !== $ingredient->getCalories();
 
             if (!$hasChanged) {
-                continue; // Ne pas l’ajouter à la liste à mettre à jour
+                continue;
             }
 
-            // On met à jour les valeurs de l'entité existante
-            $existing->setUnit($ingredient->getUnit());
-            $existing->setProteins($ingredient->getProteins());
-            $existing->setFat($ingredient->getFat());
-            $existing->setCarbs($ingredient->getCarbs());
-            $existing->setCalories($ingredient->getCalories());
+            // Mise à jour des propriétés
+            $existing
+                ->setName($ingredient->getName())
+                ->setUnit($ingredient->getUnit())
+                ->setProteins($ingredient->getProteins())
+                ->setFat($ingredient->getFat())
+                ->setCarbs($ingredient->getCarbs())
+                ->setCalories($ingredient->getCalories());
+
             $toUpdate->addIngredient($existing);
         }
 
@@ -109,7 +121,7 @@ class IngredientService implements IngredientServiceInterface
 
         return [
             'updated' => $toUpdate,
-            'not_found' => $notFound,
+            'not_found' => $notFound
         ];
     }
 }

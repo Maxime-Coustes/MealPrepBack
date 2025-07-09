@@ -105,6 +105,7 @@ class IngredientController extends AbstractController
                 return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
             }
             $data[] = [
+                'id' => $ingredient->getId(),
                 'name' => $ingredient->getName(),
                 'unit' => $ingredient->getUnit(),
                 'proteins' => $ingredient->getProteins(),
@@ -139,6 +140,7 @@ class IngredientController extends AbstractController
 
             foreach ($ingredientsCollection->getIngredients() as $ingredient) {
                 $data[] = [
+                    'id' => $ingredient->getId(),
                     'name' => $ingredient->getName(),
                     'unit' => $ingredient->getUnit(),
                     'proteins' => $ingredient->getProteins(),
@@ -189,16 +191,23 @@ class IngredientController extends AbstractController
             return new JsonResponse(['error' => 'No data provided'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
+        // Création d'une collection à partir du payload
         $ingredientCollection = new IngredientCollection();
 
         foreach ($data as $ingredientData) {
             $ingredient = new Ingredient();
-            $ingredient->setName($ingredientData['name']);
-            $ingredient->setUnit($ingredientData['unit']);
-            $ingredient->setProteins($ingredientData['proteins']);
-            $ingredient->setFat($ingredientData['fat']);
-            $ingredient->setCarbs($ingredientData['carbs']);
-            $ingredient->setCalories($ingredientData['calories']);
+
+            if (isset($ingredientData['id'])) {
+                $ingredient->setId($ingredientData['id']); // Setter temporaire uniquement ici, Doctrine gère le create
+            }
+
+            $ingredient
+                ->setName($ingredientData['name'])
+                ->setUnit($ingredientData['unit'])
+                ->setProteins($ingredientData['proteins'])
+                ->setFat($ingredientData['fat'])
+                ->setCarbs($ingredientData['carbs'])
+                ->setCalories($ingredientData['calories']);
 
             $ingredientCollection->addIngredient($ingredient);
         }
@@ -206,40 +215,24 @@ class IngredientController extends AbstractController
         try {
             $result = $this->ingredientService->updateIngredients($ingredientCollection);
 
-            // Préparer les suggestions pour les ingrédients non trouvés
-            $suggestions = [];
-            $notFoundNames = array_map(fn(Ingredient $i) => $i->getName(), $result['not_found']->getIngredients());
-
-            foreach ($ingredientCollection as $ingredient) {
-                if (in_array($ingredient->getName(), $notFoundNames, true)) {
-                    $suggestions[] = [
+            return new JsonResponse([
+                'message' => count($result['updated']) > 0 ? 'Ingredients updated' : 'No ingredients were updated.',
+                'updated' => array_map(fn(Ingredient $i) => $i->getName(), $result['updated']->getIngredients()),
+                'not_found' => array_map(fn(Ingredient $i) => $i->getName(), $result['not_found']->getIngredients()),
+                'suggestions' => array_map(function (Ingredient $i) {
+                    return [
                         'message' => 'Ingredient not found. Would you like to create it?',
                         'ingredient' => [
-                            'name' => $ingredient->getName(),
-                            'unit' => $ingredient->getUnit(),
-                            'proteins' => $ingredient->getProteins(),
-                            'fat' => $ingredient->getFat(),
-                            'carbs' => $ingredient->getCarbs(),
-                            'calories' => $ingredient->getCalories()
+                            'name' => $i->getName(),
+                            'unit' => $i->getUnit(),
+                            'proteins' => $i->getProteins(),
+                            'fat' => $i->getFat(),
+                            'carbs' => $i->getCarbs(),
+                            'calories' => $i->getCalories()
                         ]
                     ];
-                }
-            }
-
-            $statusCode = JsonResponse::HTTP_OK;
-            $message = 'Ingredient update result';
-            $updatedNames = array_map(fn(Ingredient $i) => $i->getName(), $result['updated']->getIngredients());
-
-            if (count($updatedNames) === 0 && count($notFoundNames) > 0) {
-                $message = 'No ingredients were updated. Some ingredients were not found.';
-            }
-
-            return new JsonResponse([
-                'message' => $message,
-                'updated' => $updatedNames,
-                'not_found' => $notFoundNames,
-                'suggestions' => $suggestions
-            ], $statusCode);
+                }, $result['not_found']->getIngredients())
+            ]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
