@@ -1,5 +1,8 @@
 # MealPrepBack
 
+#Backlog
+https://github.com/users/Maxime-Coustes/projects/1/views/1
+
 ## Description
 MealPrepBack est un backend pour l'application de planification de repas, permettant de gérer les ingrédients, les recettes, les profils utilisateurs et les calculs nutritionnels. Ce projet est basé sur Symfony et API Platform.
 
