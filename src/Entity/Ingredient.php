@@ -13,8 +13,8 @@ class Ingredient
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, unique: true)]
-    private ?string $name = null;
+    #[ORM\Column(length: 255, unique: true, nullable: false)]
+    private string $name;
 
     #[ORM\Column(length: 10)]
     private ?string $unit = null;
@@ -42,7 +42,7 @@ class Ingredient
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -59,7 +59,7 @@ class Ingredient
         return $this->unit;
     }
 
-    public function setUnit(string $unit): static
+    public function setUnit(?string $unit): static
     {
         $this->unit = $unit;
 
@@ -71,7 +71,7 @@ class Ingredient
         return $this->proteins;
     }
 
-    public function setProteins(float $proteins): static
+    public function setProteins(?float $proteins): static
     {
         $this->proteins = $proteins;
 
@@ -83,7 +83,7 @@ class Ingredient
         return $this->fat;
     }
 
-    public function setFat(float $fat): static
+    public function setFat(?float $fat): static
     {
         $this->fat = $fat;
 
@@ -95,7 +95,7 @@ class Ingredient
         return $this->carbs;
     }
 
-    public function setCarbs(float $carbs): static
+    public function setCarbs(?float $carbs): static
     {
         $this->carbs = $carbs;
 
@@ -107,7 +107,7 @@ class Ingredient
         return $this->calories;
     }
 
-    public function setCalories(float $calories): static
+    public function setCalories(?float $calories): static
     {
         $this->calories = $calories;
 

@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class IngredientController extends AbstractController
 {
-    private $ingredientService;
+    private IngredientServiceInterface $ingredientService;
     public const BASE_PATH = '/ingredients';
     public const RETREIVE_FAILED = 'Failed to retrieve ingredients: ';
 
@@ -124,6 +124,9 @@ class IngredientController extends AbstractController
         }
     }
 
+    /**
+     * On retourne toujours une IngredientCollection, même vide.
+     */
     #[Route('/ingredients/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
     public function getMultipleIngredientsByNameAction(string $name): JsonResponse
     {
@@ -132,10 +135,6 @@ class IngredientController extends AbstractController
         try {
             // Récupérer les ingrédients correspondant partiellement au name
             $ingredientsCollection = $this->ingredientService->getMultipleIngredientsByName($name);
-
-            if ($ingredientsCollection->isEmpty()) {
-                return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
-            }
 
             // Transformer la collection en tableau de données JSON
             $data = [];
