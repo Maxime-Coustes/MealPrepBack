@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\IngredientRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
@@ -30,6 +32,54 @@ class Ingredient
 
     #[ORM\Column]
     private ?float $calories = null;
+
+    /**
+     * @var Collection<int, RecipeIngredient>
+     */
+    private Collection $recipeIngredients;
+
+    public function __construct()
+    {
+        $this->recipeIngredients = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, RecipeIngredient>
+     */
+    public function getRecipeIngredients(): Collection
+    {
+        return $this->recipeIngredients;
+    }
+
+    /**
+     *
+     * @param RecipeIngredient $recipeIngredient
+     * @return self
+     */
+    public function addRecipeIngredient(RecipeIngredient $recipeIngredient): self
+    {
+        if (!$this->recipeIngredients->contains($recipeIngredient)) {
+            $this->recipeIngredients->add($recipeIngredient);
+            $recipeIngredient->setIngredient($this);
+        }
+        return $this;
+    }
+
+    /**
+     * @param RecipeIngredient $recipeIngredient
+     * @return self
+     */
+    public function removeRecipeIngredient(RecipeIngredient $recipeIngredient): self
+    {
+        if (
+            $this->recipeIngredients->removeElement($recipeIngredient)
+            && $recipeIngredient->getIngredient() === $this
+        ) {
+            $recipeIngredient->setIngredient(null);
+        }
+        return $this;
+    }
+
 
     public function getId(): ?int
     {

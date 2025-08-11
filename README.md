@@ -35,7 +35,9 @@ Modifiez .env.local avec vos informations de base de données:
 DATABASE_URL="mysql://username:password@127.0.0.1:3306/mealprepdb?serverVersion=5.7"
 
 5. Exécuter les migrations
+php bin/console make:migration
 php bin/console doctrine:migrations:migrate
+
 
 6. Démarrer le serveur
 symfony serve
