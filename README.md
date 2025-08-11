@@ -68,3 +68,16 @@ php bin/console doctrine:migrations:generate
 
 # Exécuter la migration
 php bin/console doctrine:migrations:migrate
+
+#### 
+# Tous les tests   ./vendor/bin/phpunit
+./vendor/bin/phpunit
+
+# Un fichier précis (should be in tests/Controller)
+./vendor/bin/phpunit tests/Controller/IngredientControllerTest.php
+
+# Une méthode précise
+./vendor/bin/phpunit --filter testNomDeLaMethode
+
+#phpStan
+./vendor/bin/phpstan analyse 
