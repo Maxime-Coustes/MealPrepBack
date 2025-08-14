@@ -89,7 +89,7 @@
         "nyholm/psr7": "^1.8",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^12.3",
-        "symfony/maker-bundle": "^1.62",
+        "symfony/maker-bundle": "^1.64",
         "symfony/stopwatch": "7.2.*",
         "symfony/var-dumper": "7.2.*",
         "symfony/web-profiler-bundle": "7.2.*"
