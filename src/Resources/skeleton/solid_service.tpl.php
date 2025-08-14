@@ -15,5 +15,24 @@ class <?= $name ?> implements <?= $interface ?>
         $this->repository = $repository;
     }
 
-    // Implémentation des méthodes
+    // Exemple de méthodes avec l’entité
+    public function create(<?= basename(str_replace('\\', '/', $entityClass)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>): void
+    {
+        die;
+    }
+
+    public function update(<?= basename(str_replace('\\', '/', $entityClass)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>): void
+    {
+        die;
+    }
+
+    public function delete(<?= basename(str_replace('\\', '/', $entityClass)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>): void
+    {
+        die;
+    }
+
+    public function find(int $id): ?<?= basename(str_replace('\\', '/', $entityClass)) ?>
+    {
+       die;
+    }
 }

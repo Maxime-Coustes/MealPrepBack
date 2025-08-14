@@ -83,3 +83,22 @@ php bin/console doctrine:migrations:migrate
 
 #phpStan
 ./vendor/bin/phpstan analyse 
+
+
+############  A DEVELOPPER POUR ACCROITRE LA MAITRISE DE LA GENERATION DE CODE REDONDANT SI NCS ############
+###Génération de services et interfaces SOLID
+
+#Ce projet inclut deux Makers personnalisés : make:solid-service et make:solid-interface.
+
+#make:solid-service
+
+#Permet de générer un le squelette d'un service prêt à l’usage pour une entité donnée.
+#Exemple : php bin/console make:solid-service Recipe
+
+
+
+#make:solid-interface
+
+#Permet de générer une interface de service SOLID pour une entité.
+#Exemple : php bin/console make:solid-interface Recipe
+
