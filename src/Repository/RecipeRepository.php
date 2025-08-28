@@ -16,28 +16,47 @@ class RecipeRepository extends ServiceEntityRepository
         parent::__construct($registry, Recipe::class);
     }
 
-//    /**
-//     * @return Recipe[] Returns an array of Recipe objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Récupère toutes les recettes avec leurs RecipeIngredient et Ingredient.
+     *
+     * @return Recipe[]
+     */
+    public function findAllWithIngredients(): array
+    {
+        return $this->createQueryBuilder('query')
+            ->leftJoin('query.recipeIngredients', 'ri')
+            ->addSelect('ri')
+            ->getQuery()
+            ->getResult();
+    }
 
-//    public function findOneBySomeField($value): ?Recipe
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * ACID: everything in a trascation, if the remove failed, nothing is applied
+     *
+     * @param Recipe $recipe
+     * @return void
+     */
+    public function deleteRecipe(Recipe $recipe): void
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $conn->beginTransaction();
+
+        try {
+            // $this->em->getConnection()->beginTransaction(); // ACID
+            // Supprime les RecipeIngredient liés
+            foreach ($recipe->getRecipeIngredients() as $ri) {
+                $this->getEntityManager()->remove($ri);
+            }
+        
+            $this->getEntityManager()->remove($recipe);
+            $this->getEntityManager()->flush();
+            $conn->commit();
+        } catch (\Throwable $e) {
+            // ⚡ Vérification avant rollback
+            if ($conn->isTransactionActive()) {
+                $conn->rollBack();
+            }
+            throw $e;
+        }
+    }
 }

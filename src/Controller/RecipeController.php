@@ -5,47 +5,35 @@ namespace App\Controller;
 use App\Entity\Recipe;
 use App\Entity\RecipeIngredient;
 use App\Repository\IngredientRepository;
-use App\Repository\RecipeRepository;
+use App\Service\RecipeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 class RecipeController extends AbstractController
 {
-    private RecipeRepository $recipeRepository;
     private EntityManagerInterface $em;
     private IngredientRepository $ingredientRepository;
-    
+
     public function __construct(
-        RecipeRepository $recipeRepository,
         IngredientRepository $ingredientRepository,
         EntityManagerInterface $em
     ) {
-        $this->recipeRepository = $recipeRepository;
         $this->ingredientRepository = $ingredientRepository;
         $this->em = $em;
     }
 
     #[Route('/recipes', name: 'list', methods: ['GET'])]
-    public function list(): JsonResponse
+    public function list(RecipeService $recipeService): JsonResponse
     {
-        $recipes = $this->recipeRepository->findAll();
-
-        $data = [];
-        foreach ($recipes as $recipe) {
-            $data[] = [
-                'id' => $recipe->getId(),
-                'name' => $recipe->getName(),
-                'preparation' => $recipe->getPreparation(),
-                // Tu peux ajouter ici les ingrédients ou macros calculées
-            ];
-        }
-
-        return $this->json($data);
+        return $this->json($recipeService->getAllRecipes());
     }
+
+
 
     #[Route('/hello', name: 'app_recipe')]
     public function index(): Response
@@ -90,5 +78,19 @@ class RecipeController extends AbstractController
             'id' => $recipe->getId(),
             'message' => 'Recipe created successfully',
         ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/recipes/{id}', name: 'delete', methods: ['DELETE'])]
+    public function delete(int $id, RecipeService $recipeService): JsonResponse
+    {
+        try {
+            $recipeService->deleteRecipeById($id);
+            return new JsonResponse(null, 204); // ⬅️ No Content
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Erreur lors de la suppression',
+                'details' => $e->getMessage()
+            ], 500);
+        }
     }
 }

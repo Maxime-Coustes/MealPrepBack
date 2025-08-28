@@ -92,13 +92,13 @@ php bin/console doctrine:migrations:migrate
 
 #make:solid-service
 
-#Permet de générer un le squelette d'un service prêt à l’usage pour une entité donnée.
+#Permet de générer le squelette d'un service prêt à l’usage pour une entité donnée.
 #Exemple : php bin/console make:solid-service Recipe
 
 
 
 #make:solid-interface
 
-#Permet de générer une interface de service SOLID pour une entité.
+#Permet de générer une interface de service SOLID pour une entité donnée.
 #Exemple : php bin/console make:solid-interface Recipe
 
