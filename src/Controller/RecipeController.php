@@ -16,7 +16,7 @@ class RecipeController extends AbstractController
     public function __construct(
         RecipeServiceInterface $recipeService
     ) {
-        $this->$recipeService = $recipeService;
+        $this->recipeService = $recipeService;
     }
 
     #[Route('/recipes', name: 'list', methods: ['GET'])]
@@ -37,7 +37,6 @@ class RecipeController extends AbstractController
      * Crée une nouvelle recette à partir d'un payload JSON.
      *
      * @param Request $request Le payload JSON contenant 'name' et 'recipeIngredients'
-     * @param RecipeService $recipeService Service de gestion des recettes
      *
      * @return JsonResponse La réponse JSON avec l'id, le nom de la recette ou une erreur
      */

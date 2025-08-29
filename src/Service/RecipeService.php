@@ -132,11 +132,6 @@ class RecipeService implements RecipeServiceInterface
         exit;
     }
 
-    public function delete(Recipe $recipe): void
-    {
-        exit;
-    }
-
     public function find(int $id): ?Recipe
     {
         return $this->repository->find($id);

@@ -51,7 +51,7 @@ class RecipeRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
             $conn->commit();
         } catch (\Throwable $e) {
-            // ⚡ Vérification avant rollback
+            // Vérification avant rollback
             if ($conn->isTransactionActive()) {
                 $conn->rollBack();
             }

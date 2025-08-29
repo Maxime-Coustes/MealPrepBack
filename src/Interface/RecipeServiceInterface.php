@@ -10,9 +10,7 @@ interface RecipeServiceInterface
 
     public function update(Recipe $recipe): void;
 
-    public function delete(Recipe $recipe): void;
     public function deleteRecipeById(int $id): void;
-    
 
     public function find(int $id): ?Recipe;
 

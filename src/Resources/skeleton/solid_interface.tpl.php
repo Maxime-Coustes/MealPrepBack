@@ -10,7 +10,7 @@ interface <?= $interfaceName ?>
 
     public function update(<?= $entityName ?> $<?= lcfirst($entityName) ?>): void;
 
-    public function delete(<?= $entityName ?> $<?= lcfirst($entityName) ?>): void;
+    public function delete<?= basename(str_replace('\\', '/', $entityName)) ?>ById(int $id): void;
 
     public function find(int $id): ?<?= $entityName ?>;
 }
