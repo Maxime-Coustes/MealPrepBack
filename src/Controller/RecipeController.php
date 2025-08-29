@@ -84,8 +84,14 @@ class RecipeController extends AbstractController
     public function delete(int $id, RecipeService $recipeService): JsonResponse
     {
         try {
+            $recipeToDelete = $recipeService->find($id);
             $recipeService->deleteRecipeById($id);
-            return new JsonResponse(null, 204); // ⬅️ No Content
+
+            return new JsonResponse([
+                'message' => 'recipe with id ' . $id . ' successfully deleted.',
+                'deletedRecipe' => $recipeToDelete->getName(),
+                'statusCode' => Response::HTTP_OK
+            ]);
         } catch (\Exception $e) {
             return $this->json([
                 'error' => 'Erreur lors de la suppression',

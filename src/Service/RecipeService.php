@@ -91,6 +91,6 @@ class RecipeService implements RecipeServiceInterface
 
     public function find(int $id): ?Recipe
     {
-        exit;
+        return $this->repository->find($id);
     }
 }

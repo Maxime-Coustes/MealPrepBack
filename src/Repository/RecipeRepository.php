@@ -31,7 +31,7 @@ class RecipeRepository extends ServiceEntityRepository
     }
 
     /**
-     * ACID: everything in a trascation, if the remove failed, nothing is applied
+     * ACID: everything in a transcation, if the remove failed, nothing is applied
      *
      * @param Recipe $recipe
      * @return void
@@ -39,10 +39,9 @@ class RecipeRepository extends ServiceEntityRepository
     public function deleteRecipe(Recipe $recipe): void
     {
         $conn = $this->getEntityManager()->getConnection();
-        $conn->beginTransaction();
+        $conn->beginTransaction(); // ACID
 
         try {
-            // $this->em->getConnection()->beginTransaction(); // ACID
             // Supprime les RecipeIngredient liés
             foreach ($recipe->getRecipeIngredients() as $ri) {
                 $this->getEntityManager()->remove($ri);
