@@ -58,4 +58,10 @@ class RecipeRepository extends ServiceEntityRepository
             throw $e;
         }
     }
+
+    public function createRecipe(Recipe $recipe): void
+    {
+        $this->getEntityManager()->persist($recipe);
+        $this->getEntityManager()->flush();
+    }
 }

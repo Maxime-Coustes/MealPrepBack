@@ -2,38 +2,28 @@
 
 namespace App\Controller;
 
-use App\Entity\Recipe;
-use App\Entity\RecipeIngredient;
-use App\Repository\IngredientRepository;
-use App\Service\RecipeService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Interface\RecipeServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 class RecipeController extends AbstractController
 {
-    private EntityManagerInterface $em;
-    private IngredientRepository $ingredientRepository;
 
+    private RecipeServiceInterface $recipeService;
     public function __construct(
-        IngredientRepository $ingredientRepository,
-        EntityManagerInterface $em
+        RecipeServiceInterface $recipeService
     ) {
-        $this->ingredientRepository = $ingredientRepository;
-        $this->em = $em;
+        $this->$recipeService = $recipeService;
     }
 
     #[Route('/recipes', name: 'list', methods: ['GET'])]
-    public function list(RecipeService $recipeService): JsonResponse
+    public function list(): JsonResponse
     {
-        return $this->json($recipeService->getAllRecipes());
+        return $this->json($this->recipeService->getAllRecipes());
     }
-
-
 
     #[Route('/hello', name: 'app_recipe')]
     public function index(): Response
@@ -43,49 +33,56 @@ class RecipeController extends AbstractController
         ]);
     }
 
+    /**
+     * Crée une nouvelle recette à partir d'un payload JSON.
+     *
+     * @param Request $request Le payload JSON contenant 'name' et 'recipeIngredients'
+     * @param RecipeService $recipeService Service de gestion des recettes
+     *
+     * @return JsonResponse La réponse JSON avec l'id, le nom de la recette ou une erreur
+     */
     #[Route('/recipe', name: 'create', methods: ['POST'])]
-    public function create(Request $request): Response
+    public function createAction(Request $request): Response
     {
-        $data = json_decode($request->getContent(), true);
-
-        if (!$data || !isset($data['name'], $data['recipeIngredients'])) {
-            return $this->json(['error' => 'Invalid data'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $recipe = new Recipe();
-        $recipe->setName($data['name']);
-        $recipe->setPreparation($data['preparation'] ?? null);
-
-        foreach ($data['recipeIngredients'] as $riData) {
-            $ingredient = $this->ingredientRepository->find($riData['ingredient'] ?? 0);
-            if (!$ingredient) {
-                return $this->json(['error' => "Ingredient with id {$riData['ingredient']} not found"], Response::HTTP_BAD_REQUEST);
+        $recipePayload = json_decode($request->getContent(), true);
+        $response = null;
+        $statusCode = Response::HTTP_OK;
+        if (!$recipePayload || !isset($recipePayload['name'], $recipePayload['recipeIngredients'])) {
+            $response = ['error' => 'Invalid data'];
+            $statusCode = Response::HTTP_BAD_REQUEST;
+        } else {
+            try {
+                $recipeToCreate = $this->recipeService->create($recipePayload);
+                $response = [
+                    'id' => $recipeToCreate['created']->getId(),
+                    'name' => $recipeToCreate['created']->getName(),
+                    'message' => 'Recipe created successfully',
+                ];
+                $statusCode = Response::HTTP_CREATED;
+            } catch (\Throwable $e) {
+                $response = [
+                    'error' => 'Unexpected error',
+                    'details' => $e->getMessage(),
+                ];
+                $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
             }
-
-            $recipeIngredient = new RecipeIngredient();
-            $recipeIngredient->setIngredient($ingredient);
-            $recipeIngredient->setRecipe($recipe);
-            $recipeIngredient->setQuantity(floatval($riData['quantity'] ?? 0));
-            $recipeIngredient->setUnit($riData['unit'] ?? '');
-
-            $recipe->addRecipeIngredient($recipeIngredient);
         }
-
-        $this->em->persist($recipe);
-        $this->em->flush();
-
-        return $this->json([
-            'id' => $recipe->getId(),
-            'message' => 'Recipe created successfully',
-        ], Response::HTTP_CREATED);
+        return $this->json($response, $statusCode);
     }
 
+    /**
+     * Supprime une recette existante par son ID.
+     *
+     * @param int $id ID de la recette à supprimer
+     *
+     * @return JsonResponse La réponse JSON confirmant la suppression ou une erreur
+     */
     #[Route('/recipes/{id}', name: 'delete', methods: ['DELETE'])]
-    public function delete(int $id, RecipeService $recipeService): JsonResponse
+    public function deleteAction(int $id): JsonResponse
     {
         try {
-            $recipeToDelete = $recipeService->find($id);
-            $recipeService->deleteRecipeById($id);
+            $recipeToDelete = $this->recipeService->find($id);
+            $this->recipeService->deleteRecipeById($id);
 
             return new JsonResponse([
                 'message' => 'recipe with id ' . $id . ' successfully deleted.',

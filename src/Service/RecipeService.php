@@ -2,24 +2,40 @@
 
 namespace App\Service;
 
+use App\Entity\Ingredient;
 use App\Entity\Recipe;
+use App\Entity\RecipeIngredient;
 use App\Interface\RecipeServiceInterface;
 use App\Repository\RecipeRepository;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 
 class RecipeService implements RecipeServiceInterface
 {
     private RecipeRepository $repository;
+    private IngredientService $ingredientService;
 
-    public function __construct(RecipeRepository $repository)
+    public function __construct(RecipeRepository $repository, IngredientService $ingredientService)
     {
         $this->repository = $repository;
+        $this->ingredientService = $ingredientService;
     }
 
     /**
-     * Retourne toutes les recettes avec leurs ingrédients pour le JSON.
+     * Récupère toutes les recettes avec leurs ingrédients sous forme de tableau.
      *
-     * @return array
+     * @return array<int, array{
+     *     id: int,
+     *     name: string,
+     *     preparation: string|null,
+     *     ingredients: array<int, array{
+     *         id: int,
+     *         name: string,
+     *         quantity: float,
+     *         unit: string
+     *     }>
+     * }>
      */
     public function getAllRecipes(): array
     {
@@ -56,8 +72,11 @@ class RecipeService implements RecipeServiceInterface
     }
 
     /**
-     * @param integer $id
-     * @return void
+     * Supprime une recette existante.
+     *
+     * @param int $id L'ID de la recette à supprimer
+     *
+     * @throws NotFoundHttpException Si la recette n'existe pas
      */
     public function deleteRecipeById(int $id): void
     {
@@ -70,13 +89,42 @@ class RecipeService implements RecipeServiceInterface
         $this->repository->deleteRecipe($recipe);
     }
 
-
-
-
-    // Exemple de méthodes avec l’entité
-    public function create(Recipe $recipe): void
+    /**
+     * Crée une nouvelle recette et ses RecipeIngredient associés.
+     *
+     * @param array $recipePayload Tableau associatif avec :
+     *  - 'name' => string
+     *  - 'preparation' => string|null
+     *  - 'recipeIngredients' => array[] (chaque élément contient 'ingredient', 'quantity', 'unit')
+     *
+     * @return array Contenant la recette créée : ['created' => Recipe]
+     *
+     * @throws BadRequestHttpException Si un ingredient n'est pas trouvé
+     * @throws \Throwable Pour toute autre erreur inattendue
+     */
+    public function create(array $recipePayload): array
     {
-        exit;
+        $recipeToCreate = new Recipe();
+        $recipeToCreate->setName($recipePayload['name']);
+        $recipeToCreate->setPreparation($recipePayload['preparation'] ?? null);
+
+        foreach ($recipePayload['recipeIngredients'] as $recipeIngredientsData) {
+            $ingredient = $this->findIngredient($recipeIngredientsData['ingredient'] ?? 0);
+            if (!$ingredient) {
+                throw new BadRequestHttpException("Ingredient with id {$recipeIngredientsData['ingredient']} not found");
+            }
+
+            $recipeIngredient = new RecipeIngredient();
+            $recipeIngredient->setIngredient($ingredient);
+            $recipeIngredient->setRecipe($recipeToCreate);
+            $recipeIngredient->setQuantity(floatval($recipeIngredientsData['quantity'] ?? 0));
+            $recipeIngredient->setUnit($recipeIngredientsData['unit'] ?? '');
+
+            $recipeToCreate->addRecipeIngredient($recipeIngredient);
+        }
+        $this->repository->createRecipe($recipeToCreate);
+
+        return ['created' => $recipeToCreate];
     }
 
     public function update(Recipe $recipe): void
@@ -92,5 +140,17 @@ class RecipeService implements RecipeServiceInterface
     public function find(int $id): ?Recipe
     {
         return $this->repository->find($id);
+    }
+
+    /**
+     * Récupère un ingrédient par son ID via le service Ingredient.
+     *
+     * @param int $id L'ID de l'ingrédient
+     *
+     * @return Ingredient|null L'ingrédient ou null s'il n'existe pas
+     */
+    public function findIngredient(int $id): ?Ingredient
+    {
+        return $this->ingredientService->findOneById($id);
     }
 }

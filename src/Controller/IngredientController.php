@@ -23,6 +23,12 @@ class IngredientController extends AbstractController
     }
 
 
+    /**
+     * Crée une collection d'ingrédients à partir du payload JSON.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
     #[Route(self::BASE_PATH, name: 'create', methods: ['POST'])]
     public function createIngredientsAction(Request $request): JsonResponse
     {
@@ -66,6 +72,11 @@ class IngredientController extends AbstractController
     }
 
 
+    /**
+     * Retourne la liste complète des ingrédients.
+     *
+     * @return JsonResponse
+     */
     #[Route(self::BASE_PATH, name: 'getIngredientsList', methods: ['GET'])]
     public function getIngredientsListAction(): JsonResponse
     {
@@ -95,6 +106,12 @@ class IngredientController extends AbstractController
         }
     }
 
+    /**
+     * Retourne un ingrédient unique par son nom.
+     *
+     * @param string $name
+     * @return JsonResponse
+     */
     #[Route(self::BASE_PATH . '/single/{name}', name: 'getSingleIngredientByName', methods: ['GET'])]
     public function getSingleIngredientsByNameAction(string $name): JsonResponse
     {
@@ -125,7 +142,10 @@ class IngredientController extends AbstractController
     }
 
     /**
-     * On retourne toujours une IngredientCollection, même vide.
+     * Retourne plusieurs ingrédients correspondant partiellement au nom.
+     *
+     * @param string $name
+     * @return JsonResponse
      */
     #[Route('/ingredients/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
     public function getMultipleIngredientsByNameAction(string $name): JsonResponse
@@ -161,7 +181,10 @@ class IngredientController extends AbstractController
     }
 
     /**
-     * if {id} is not provided, the RouterListener will raise a 404
+     * Supprime un ingrédient unique par son id.
+     *
+     * @param int $id
+     * @return JsonResponse
      */
     #[Route(self::BASE_PATH . '/single/{id}', name: 'deleteSingleIngredientById', methods: ['DELETE'])]
     public function deleteSingleIngredientByIdAction(int $id): JsonResponse
@@ -195,7 +218,11 @@ class IngredientController extends AbstractController
     }
 
     /**
+     * Supprime tous les ingrédients correspondant au nom fourni.
      * if {name} is not provided, the RouterListener will raise a 404
+     *
+     * @param string $name
+     * @return JsonResponse
      */
     #[Route(self::BASE_PATH . '/{name}', name: 'deleteMultipleIngredientsByName', methods: ['DELETE'])]
     public function deleteMultipleIngredientsByNameAction(string $name): JsonResponse
@@ -217,6 +244,12 @@ class IngredientController extends AbstractController
         return $response;
     }
 
+    /**
+     * Met à jour une collection d'ingrédients depuis le payload JSON.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
     #[Route('/ingredients', name: 'update', methods: ['PUT'])]
     public function updateIngredientsAction(Request $request): JsonResponse
     {

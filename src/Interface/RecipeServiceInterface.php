@@ -6,7 +6,7 @@ use App\Entity\Recipe;
 
 interface RecipeServiceInterface
 {
-    public function create(Recipe $recipe): void;
+    public function create(array $recipe): array;
 
     public function update(Recipe $recipe): void;
 
