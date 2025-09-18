@@ -29,7 +29,7 @@ class IngredientController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route(self::BASE_PATH, name: 'create', methods: ['POST'])]
+    #[Route(self::BASE_PATH .'/create', name: 'createIngredients', methods: ['POST'])]
     public function createIngredientsAction(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -147,7 +147,7 @@ class IngredientController extends AbstractController
      * @param string $name
      * @return JsonResponse
      */
-    #[Route('/ingredients/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
+    #[Route(self::BASE_PATH . '/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
     public function getMultipleIngredientsByNameAction(string $name): JsonResponse
     {
         $name = ucfirst($name);
@@ -250,7 +250,7 @@ class IngredientController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route('/ingredients', name: 'update', methods: ['PUT'])]
+    #[Route(self::BASE_PATH, name: 'update', methods: ['PUT'])]
     public function updateIngredientsAction(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
