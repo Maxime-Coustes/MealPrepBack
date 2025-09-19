@@ -124,4 +124,61 @@ class RecipeController extends AbstractController
             ], 500);
         }
     }
+
+    #[Route('/recipe', name: 'update', methods: ['PUT'])]
+    public function updateRecipeAction(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $response = [];
+        $statusCode = JsonResponse::HTTP_OK;
+
+        // ✅ Vérification basique
+        if (empty($data['id']) || empty($data['name']) || empty($data['ingredients'])) {
+            $response = ['error' => 'Missing required fields: id, name, ingredients'];
+            $statusCode = JsonResponse::HTTP_BAD_REQUEST;
+        } else {
+            try {
+                // Appel du service pour gérer added / updated / removed
+                // 🔹 Récupère l'entité Recipe existante
+                $recipe = $this->recipeService->find($data['id']);
+
+                // 🔹 Passe l'entité + payload au service update
+                $result = $this->recipeService->update($recipe, $data);
+
+                $response = [
+                    'message' => count($result['added']) || count($result['updated']) || count($result['removed'])
+                    || !empty($result['nameChanged']) || !empty($result['preparationChanged'])
+                        ? 'Recipe updated successfully'
+                        : 'No changes were made',
+                    'nameChanged' => $result['nameChanged'],
+                    'new_name' => $result['nameChanged'] ? $result['recipe']->getName() : null,
+                    'preparationChanged' => $result['preparationChanged'],
+                    'new_preparation' => $result['preparationChanged'] ? $result['recipe']->getPreparation() : null,
+                    'added' => array_map(fn($ri) => [
+                        'id' => $ri->getIngredient()->getId(),
+                        'name' => $ri->getIngredient()->getName(),
+                        'quantity' => $ri->getQuantity(),
+                        'unit' => $ri->getUnit()
+                    ], $result['added']),
+                    'updated' => array_map(fn($ri) => [
+                        'id' => $ri->getIngredient()->getId(),
+                        'name' => $ri->getIngredient()->getName(),
+                        'quantity' => $ri->getQuantity(),
+                        'unit' => $ri->getUnit()
+                    ], $result['updated']),
+                    'removed' => array_map(fn($ri) => [
+                        'id' => $ri->getIngredient()->getId(),
+                        'name' => $ri->getIngredient()->getName(),
+                        'quantity' => $ri->getQuantity(),
+                        'unit' => $ri->getUnit()
+                    ], $result['removed']),
+                ];
+            } catch (\Throwable $e) {
+                $response = ['error' => $e->getMessage()];
+                $statusCode = JsonResponse::HTTP_INTERNAL_SERVER_ERROR;
+            }
+        }
+
+        return new JsonResponse($response, $statusCode);
+    }
 }

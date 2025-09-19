@@ -154,9 +154,116 @@ class RecipeService implements RecipeServiceInterface
         return $existingRecipe !== null;
     }
 
-    public function update(Recipe $recipe): void
+    /**
+     * @param Recipe $recipe
+     * @param array $payload
+     * @return array{recipe: Recipe, nameChanged: bool, preparationChanged: bool, added: array, updated: array, removed: array, message: string}
+     */
+    public function update(Recipe $recipe, array $payload): array
     {
-        exit;
+        $nameChanged = $this->updateRecipeName($recipe, $payload['name']);
+        $preparationChanged = $this->updateRecipePreparation($recipe, $payload['preparation'] ?? null);
+
+        [$added, $updated, $removed] = $this->syncIngredients($recipe, $payload['ingredients'] ?? []);
+
+        $this->repository->update($recipe);
+
+        $message = ($nameChanged || $preparationChanged || count($added) || count($updated) || count($removed))
+            ? 'Recipe updated successfully'
+            : 'No changes were made';
+
+        return compact('recipe', 'nameChanged', 'preparationChanged', 'added', 'updated', 'removed', 'message');
+    }
+
+    /** @return bool */
+    private function updateRecipeName(Recipe $recipe, string $newName): bool
+    {
+        if ($recipe->getName() === $newName) {
+            return false;
+        }
+        $recipe->setName($newName);
+        return true;
+    }
+
+    /** @return bool */
+    private function updateRecipePreparation(Recipe $recipe, ?string $newPreparation): bool
+    {
+        if ($recipe->getPreparation() === $newPreparation) {
+            return false;
+        }
+        $recipe->setPreparation($newPreparation);
+        return true;
+    }
+
+    /**
+     * @param Recipe $recipe
+     * @param array<int, array> $payloadIngredients
+     * @return array{array, array, array} [$added, $updated, $removed]
+     */
+    private function syncIngredients(Recipe $recipe, array $payloadIngredients): array
+    {
+        $added = $updated = $removed = [];
+
+        $existingIngredients = [];
+        foreach ($recipe->getRecipeIngredients() as $ri) {
+            $existingIngredients[$ri->getIngredient()->getId()] = $ri;
+        }
+
+        $payloadMap = [];
+        foreach ($payloadIngredients as $i) {
+            $payloadMap[$i['id']] = $i;
+        }
+
+        // Removed
+        foreach ($existingIngredients as $id => $ri) {
+            if (!isset($payloadMap[$id])) {
+                $recipe->removeRecipeIngredient($ri);
+                $removed[] = $ri;
+            }
+        }
+
+        // Added / updated
+        foreach ($payloadMap as $id => $data) {
+            if (isset($existingIngredients[$id])) {
+                $ri = $existingIngredients[$id];
+                if ($this->updateRecipeIngredient($ri, $data)) {
+                    $updated[] = $ri;
+                }
+            } else {
+                $ingredient = $this->ingredientService->findOneById($id);
+                if (!$ingredient) {
+                    continue;
+                }
+                $ri = new RecipeIngredient();
+                $ri->setIngredient($ingredient)
+                    ->setQuantity(floatval($data['quantity'] ?? 0))
+                    ->setUnit($data['unit'] ?? '');
+                $recipe->addRecipeIngredient($ri);
+                $added[] = $ri;
+            }
+        }
+
+        return [$added, $updated, $removed];
+    }
+
+    /** @return bool si la quantité/unit a changé */
+    private function updateRecipeIngredient(RecipeIngredient $ri, array $data): bool
+    {
+        $changed = false;
+
+        $qty = floatval($data['quantity'] ?? 0);
+        if ($ri->getQuantity() !== $qty) {
+            $ri->setQuantity($qty);
+            $changed = true;
+        }
+
+        $unit = $data['unit'] ?? '';
+        if ($ri->getUnit() !== $unit) {
+            $ri->setUnit($unit);
+            $changed = true;
+        }
+
+        return $changed;
     }
 
     public function find(int $id): ?Recipe

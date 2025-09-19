@@ -250,7 +250,7 @@ class IngredientController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route(self::BASE_PATH, name: 'update', methods: ['PUT'])]
+    #[Route(self::BASE_PATH, name: 'updateIngredients', methods: ['PUT'])]
     public function updateIngredientsAction(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);

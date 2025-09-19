@@ -8,7 +8,7 @@ interface RecipeServiceInterface
 {
     public function create(array $recipe): array;
 
-    public function update(Recipe $recipe): void;
+    public function update(Recipe $recipe, array $payload): array;
 
     public function deleteRecipeById(int $id): void;
 

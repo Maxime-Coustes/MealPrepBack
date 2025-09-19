@@ -46,7 +46,7 @@ class RecipeRepository extends ServiceEntityRepository
             foreach ($recipe->getRecipeIngredients() as $ri) {
                 $this->getEntityManager()->remove($ri);
             }
-        
+
             $this->getEntityManager()->remove($recipe);
             $this->getEntityManager()->flush();
             $conn->commit();
@@ -63,5 +63,27 @@ class RecipeRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($recipe);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Persiste et flush une recette (update)
+     * Respecte ACID : transaction, atomicité, rollback en cas d'erreur
+     *
+     * @param Recipe $recipe
+     * @throws Exception|ORMException|OptimisticLockException
+     */
+    public function update(Recipe $recipe): void
+    {
+        $em = $this->getEntityManager();
+        $em->getConnection()->beginTransaction();
+
+        try {
+            $em->persist($recipe); // persiste la recette + ingrédients liés
+            $em->flush();
+            $em->getConnection()->commit();
+        } catch (\Throwable $e) {
+            $em->getConnection()->rollBack();
+            throw $e;
+        }
     }
 }
