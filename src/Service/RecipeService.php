@@ -104,6 +104,16 @@ class RecipeService implements RecipeServiceInterface
      */
     public function create(array $recipePayload): array
     {
+        // Vérifie si la recette existe déjà
+        $recipeAlreadyExists = $this->checkIfExists($recipePayload);
+
+        if ($recipeAlreadyExists) {
+            return [
+                'conflict' => $recipePayload['name'],
+            ];
+        }
+
+        // Sinon, on crée une nouvelle recette
         $recipeToCreate = new Recipe();
         $recipeToCreate->setName($recipePayload['name']);
         $recipeToCreate->setPreparation($recipePayload['preparation'] ?? null);
@@ -122,9 +132,26 @@ class RecipeService implements RecipeServiceInterface
 
             $recipeToCreate->addRecipeIngredient($recipeIngredient);
         }
+
         $this->repository->createRecipe($recipeToCreate);
 
-        return ['created' => $recipeToCreate];
+        return [
+            'created' => $recipeToCreate,
+        ];
+    }
+
+
+    /**
+     * @param array $recipePayload
+     * @return boolean
+     */
+    private function checkIfExists(array $recipePayload): bool
+    {
+        // Vérifie si un ingrédient avec le même name existe déjà dans la base
+        $existingRecipe = $this->repository->findOneBy(['name' => $recipePayload['name']]);
+
+        // Si l'ingrédient existe déjà, on retourne true
+        return $existingRecipe !== null;
     }
 
     public function update(Recipe $recipe): void

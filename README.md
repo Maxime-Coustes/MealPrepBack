@@ -21,6 +21,7 @@ Avant de commencer, vous devez avoir installé les éléments suivants sur votre
 
 ```bash
 git clone git@github.com:Maxime-Coustes/MealPrepBack.git
+````
 
 2. Accéder au dossier du projet
 cd MealPrepBack
@@ -32,7 +33,9 @@ composer install
 cp .env .env.local
 
 Modifiez .env.local avec vos informations de base de données:
+```bash 
 DATABASE_URL="mysql://username:password@127.0.0.1:3306/mealprepdb?serverVersion=5.7"
+````
 
 5. Exécuter les migrations
 php bin/console make:migration
@@ -52,11 +55,12 @@ Méthode : GET
 Permet de vérifier que l'API fonctionne.
 
 Réponse :
-
+```JSON
 {
   "status": "success",
   "message": "API is running"
 }
+````
 
 Authentification
 L'API utilise JSON Web Tokens (JWT) pour l'authentification des utilisateurs. Pour obtenir un token, envoyez une requête POST à /api/login avec les informations d'identification (par exemple, email et mot de passe).
@@ -84,21 +88,21 @@ php bin/console doctrine:migrations:migrate
 #phpStan
 ./vendor/bin/phpstan analyse 
 
+#################################
+#################################
+#  A DEVELOPPER POUR ACCROITRE LA MAITRISE DE LA GENERATION DE CODE REDONDANT 
 
-############  A DEVELOPPER POUR ACCROITRE LA MAITRISE DE LA GENERATION DE CODE REDONDANT SI NCS ############
-###Génération de services et interfaces SOLID
+# Génération de services et interfaces SOLID
 
-#Ce projet inclut deux Makers personnalisés : make:solid-service et make:solid-interface.
+Ce projet inclut deux Makers personnalisés : make:solid-service et make:solid-interface.
 
-#make:solid-service
-
-#Permet de générer le squelette d'un service prêt à l’usage pour une entité donnée.
+````make:solid-service````
+qui permet de générer le squelette d'un service prêt à l’usage pour une entité donnée.
 #Exemple : php bin/console make:solid-service Recipe
 
 
 
-#make:solid-interface
-
-#Permet de générer une interface de service SOLID pour une entité donnée.
+````make:solid-interface````
+qui permet de générer une interface de service SOLID pour une entité donnée.
 #Exemple : php bin/console make:solid-interface Recipe
 

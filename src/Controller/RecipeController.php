@@ -18,13 +18,6 @@ class RecipeController extends AbstractController
     ) {
         $this->recipeService = $recipeService;
     }
-
-    #[Route('/recipes', name: 'list', methods: ['GET'])]
-    public function list(): JsonResponse
-    {
-        return $this->json($this->recipeService->getAllRecipes());
-    }
-
     #[Route('/hello', name: 'app_recipe')]
     public function index(): Response
     {
@@ -32,6 +25,13 @@ class RecipeController extends AbstractController
             'controller_name' => 'RecipeController',
         ]);
     }
+
+    #[Route('/recipes', name: 'list', methods: ['GET'])]
+    public function list(): JsonResponse
+    {
+        return $this->json($this->recipeService->getAllRecipes());
+    }
+
 
     /**
      * Crée une nouvelle recette à partir d'un payload JSON.
@@ -41,23 +41,50 @@ class RecipeController extends AbstractController
      * @return JsonResponse La réponse JSON avec l'id, le nom de la recette ou une erreur
      */
     #[Route('/recipe', name: 'create', methods: ['POST'])]
-    public function createAction(Request $request): Response
+    public function createAction(Request $request): JsonResponse
     {
         $recipePayload = json_decode($request->getContent(), true);
-        $response = null;
+
+        $response = [];
         $statusCode = Response::HTTP_OK;
-        if (!$recipePayload || !isset($recipePayload['name'], $recipePayload['recipeIngredients'])) {
-            $response = ['error' => 'Invalid data'];
+        $requiredFields = ['name', 'recipeIngredients', 'preparation'];
+        $missingFields = [];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($recipePayload[$field]) || (is_string($recipePayload[$field]) && trim($recipePayload[$field]) === '')) {
+                $missingFields[] = $field;
+            }
+        }
+
+        if (!$recipePayload || !empty($missingFields)) {
+            $errors = array_map(fn($f) => "Field '$f' is mandatory", $missingFields);
+            $response = ['error' => $errors];
             $statusCode = Response::HTTP_BAD_REQUEST;
         } else {
             try {
-                $recipeToCreate = $this->recipeService->create($recipePayload);
-                $response = [
-                    'id' => $recipeToCreate['created']->getId(),
-                    'name' => $recipeToCreate['created']->getName(),
-                    'message' => 'Recipe created successfully',
-                ];
-                $statusCode = Response::HTTP_CREATED;
+                $result = $this->recipeService->create($recipePayload);
+
+                [$response, $statusCode] = match (true) {
+                    isset($result['conflict']) => [
+                        [
+                            'error' => 'Recipe already exists',
+                            'conflict' => $result['conflict'],
+                        ],
+                        Response::HTTP_CONFLICT,
+                    ],
+                    isset($result['created']) => [
+                        [
+                            'id' => $result['created']->getId(),
+                            'name' => $result['created']->getName(),
+                            'message' => 'Recipe created successfully',
+                        ],
+                        Response::HTTP_CREATED,
+                    ],
+                    default => [
+                        ['error' => 'Unexpected service response'],
+                        Response::HTTP_INTERNAL_SERVER_ERROR,
+                    ]
+                };
             } catch (\Throwable $e) {
                 $response = [
                     'error' => 'Unexpected error',
@@ -66,8 +93,10 @@ class RecipeController extends AbstractController
                 $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
             }
         }
+
         return $this->json($response, $statusCode);
     }
+
 
     /**
      * Supprime une recette existante par son ID.
