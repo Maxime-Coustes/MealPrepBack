@@ -73,9 +73,7 @@ class RecipeRepository extends ServiceEntityRepository
      * Respecte ACID : transaction, atomicité, rollback en cas d'erreur
      *
      * @param Recipe $recipe
-     * @throws \Exception
-     * @throws ORMException
-     * @throws OptimisticLockException
+     * @throws \Throwable
      */
     public function update(Recipe $recipe): void
     {

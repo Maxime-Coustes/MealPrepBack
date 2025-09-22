@@ -23,7 +23,7 @@ class RecipeService implements RecipeServiceInterface
         $this->ingredientService = $ingredientService;
     }
 
-    
+
     public function getAllRecipes(): RecipeCollection
     {
         $recipes = $this->repository->findAllWithIngredients();
@@ -51,15 +51,11 @@ class RecipeService implements RecipeServiceInterface
     /**
      * Crée une nouvelle recette et ses RecipeIngredient associés.
      *
-     * @param array $recipePayload Tableau associatif avec :
-     *  - 'name' => string
-     *  - 'preparation' => string|null
-     *  - 'recipeIngredients' => array[] (chaque élément contient 'ingredient', 'quantity', 'unit')
+     * @param array<string, mixed> $recipePayload
+     * @return array{created: Recipe}|array{conflict: string}
      *
-     * @return array Contenant la recette créée : ['created' => Recipe]
-     *
-     * @throws BadRequestHttpException Si un ingredient n'est pas trouvé
-     * @throws \Throwable Pour toute autre erreur inattendue
+     * @throws BadRequestHttpException
+     * @throws \Throwable
      */
     public function create(array $recipePayload): array
     {
@@ -101,8 +97,8 @@ class RecipeService implements RecipeServiceInterface
 
 
     /**
-     * @param array $recipePayload
-     * @return boolean
+     * @param array<string, mixed> $recipePayload
+     * @return bool
      */
     private function checkIfExists(array $recipePayload): bool
     {
@@ -115,8 +111,16 @@ class RecipeService implements RecipeServiceInterface
 
     /**
      * @param Recipe $recipe
-     * @param array $payload
-     * @return array{recipe: Recipe, nameChanged: bool, preparationChanged: bool, added: array, updated: array, removed: array, message: string}
+     * @param array<string, mixed> $payload
+     * @return array{
+     *   recipe: Recipe,
+     *   nameChanged: bool,
+     *   preparationChanged: bool,
+     *   added: RecipeIngredient[],
+     *   updated: RecipeIngredient[],
+     *   removed: RecipeIngredient[],
+     *   message: string
+     * }
      */
     public function update(Recipe $recipe, array $payload): array
     {
@@ -155,44 +159,103 @@ class RecipeService implements RecipeServiceInterface
     }
 
     /**
+     * Synchronise les ingrédients d'une recette avec ceux du payload.
+     *
      * @param Recipe $recipe
-     * @param array<int, array> $payloadIngredients
-     * @return array{array, array, array} [$added, $updated, $removed]
+     * @param array<int, array<string, mixed>> $payloadIngredients
+     * @return array{RecipeIngredient[], RecipeIngredient[], RecipeIngredient[]} [$added, $updated, $removed]
      */
     private function syncIngredients(Recipe $recipe, array $payloadIngredients): array
     {
-        $added = $updated = $removed = [];
+        $existingIngredients = $this->mapExistingIngredients($recipe);
+        $payloadMap = $this->mapPayloadIngredients($payloadIngredients);
 
-        $existingIngredients = [];
+        $removed = $this->processRemovedIngredients($recipe, $existingIngredients, $payloadMap);
+        [$added, $updated] = $this->processAddedOrUpdatedIngredients($recipe, $existingIngredients, $payloadMap);
+
+        return [$added, $updated, $removed];
+    }
+
+    /**
+     * Crée une map des ingrédients existants d'une recette pour un accès rapide par ID.
+     *
+     * @param Recipe $recipe La recette dont on veut mapper les ingrédients
+     * @return array<int, RecipeIngredient> Tableau associatif [ingredientId => RecipeIngredient]
+     */
+    private function mapExistingIngredients(Recipe $recipe): array
+    {
+        $map = [];
         foreach ($recipe->getRecipeIngredients() as $ri) {
-            $existingIngredients[$ri->getIngredient()->getId()] = $ri;
+            $ingredient = $ri->getIngredient();
+            if ($ingredient?->getId() !== null) {
+                $map[$ingredient->getId()] = $ri;
+            }
         }
+        return $map;
+    }
 
-        $payloadMap = [];
+    /**
+     * Crée une map des ingrédients fournis dans le payload pour un accès rapide par ID.
+     *
+     * @param array<int, array<string, mixed>> $payloadIngredients Tableau d'ingrédients du payload
+     * @return array<int, array<string, mixed>> Tableau associatif [ingredientId => données de l'ingrédient]
+     */
+    private function mapPayloadIngredients(array $payloadIngredients): array
+    {
+        $map = [];
         foreach ($payloadIngredients as $i) {
-            $payloadMap[$i['id']] = $i;
+            $map[$i['id']] = $i;
         }
+        return $map;
+    }
 
-        // Removed
-        foreach ($existingIngredients as $id => $ri) {
+    /**
+     * Identifie et supprime les ingrédients qui existent dans la recette mais ne sont plus présents dans le payload.
+     *
+     * @param Recipe $recipe La recette dont on traite les ingrédients
+     * @param array<int, RecipeIngredient> $existing Map des ingrédients existants
+     * @param array<int, array<string, mixed>> $payloadMap Map des ingrédients du payload
+     * @return RecipeIngredient[] Liste des ingrédients supprimés
+     */
+    private function processRemovedIngredients(Recipe $recipe, array $existing, array $payloadMap): array
+    {
+        $removed = [];
+        foreach ($existing as $id => $ri) {
             if (!isset($payloadMap[$id])) {
                 $recipe->removeRecipeIngredient($ri);
                 $removed[] = $ri;
             }
         }
+        return $removed;
+    }
 
-        // Added / updated
+    /**
+     *  * Traite les ingrédients à ajouter ou à mettre à jour dans une recette.
+     *
+     * Cette méthode compare les ingrédients existants avec ceux provenant du payload :
+     *   - Si l'ingrédient existe déjà, sa quantité et son unité sont mises à jour si nécessaire.
+     *   - Si l'ingrédient n'existe pas encore, il est créé et ajouté à la recette.
+     *
+     * @param Recipe $recipe
+     * @param array<int, RecipeIngredient> $existing
+     * @param array<int, array<string, mixed>> $payloadMap
+     * @return array{RecipeIngredient[], RecipeIngredient[]}
+     */
+    private function processAddedOrUpdatedIngredients(Recipe $recipe, array $existing, array $payloadMap): array
+    {
+        $added = [];
+        $updated = [];
+
         foreach ($payloadMap as $id => $data) {
-            if (isset($existingIngredients[$id])) {
-                $ri = $existingIngredients[$id];
+            if (isset($existing[$id])) {
+                $ri = $existing[$id];
                 if ($this->updateRecipeIngredient($ri, $data)) {
                     $updated[] = $ri;
                 }
             } else {
                 $ingredient = $this->ingredientService->findOneById($id);
-                if (!$ingredient) {
-                    continue;
-                }
+                if(!$ingredient){  continue; }
+
                 $ri = new RecipeIngredient();
                 $ri->setIngredient($ingredient)
                     ->setQuantity(floatval($data['quantity'] ?? 0))
@@ -202,10 +265,15 @@ class RecipeService implements RecipeServiceInterface
             }
         }
 
-        return [$added, $updated, $removed];
+        return [$added, $updated];
     }
 
-    /** @return bool si la quantité/unit a changé */
+
+    /**
+     * @param RecipeIngredient $ri
+     * @param array<string, mixed> $data
+     * @return bool
+     */
     private function updateRecipeIngredient(RecipeIngredient $ri, array $data): bool
     {
         $changed = false;
