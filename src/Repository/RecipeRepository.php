@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\Recipe;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 
 /**
  * @extends ServiceEntityRepository<Recipe>
@@ -65,12 +67,15 @@ class RecipeRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
+
     /**
      * Persiste et flush une recette (update)
      * Respecte ACID : transaction, atomicité, rollback en cas d'erreur
      *
      * @param Recipe $recipe
-     * @throws Exception|ORMException|OptimisticLockException
+     * @throws \Exception
+     * @throws ORMException
+     * @throws OptimisticLockException
      */
     public function update(Recipe $recipe): void
     {

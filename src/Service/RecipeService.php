@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Ingredient;
 use App\Entity\Recipe;
+use App\Entity\RecipeCollection;
 use App\Entity\RecipeIngredient;
 use App\Interface\RecipeServiceInterface;
 use App\Repository\RecipeRepository;
@@ -22,53 +23,11 @@ class RecipeService implements RecipeServiceInterface
         $this->ingredientService = $ingredientService;
     }
 
-    /**
-     * Récupère toutes les recettes avec leurs ingrédients sous forme de tableau.
-     *
-     * @return array<int, array{
-     *     id: int,
-     *     name: string,
-     *     preparation: string|null,
-     *     ingredients: array<int, array{
-     *         id: int,
-     *         name: string,
-     *         quantity: float,
-     *         unit: string
-     *     }>
-     * }>
-     */
-    public function getAllRecipes(): array
+    
+    public function getAllRecipes(): RecipeCollection
     {
         $recipes = $this->repository->findAllWithIngredients();
-        $data = [];
-        foreach ($recipes as $recipe) {
-            $ingredients = [];
-            foreach ($recipe->getRecipeIngredients() as $recipeIngredient) {
-                $ingredient = $recipeIngredient->getIngredient();
-                $recipeIngredient->getIngredient()->getName();
-
-                // Protection au cas où un ingrédient est manquant
-                if (!$ingredient) {
-                    continue;
-                }
-
-                $ingredients[] = [
-                    'id' => $ingredient->getId(),
-                    'name' => $ingredient->getName(),
-                    'quantity' => $recipeIngredient->getQuantity(),
-                    'unit' => $recipeIngredient->getUnit(),
-                ];
-            }
-
-            $data[] = [
-                'id' => $recipe->getId(),
-                'name' => $recipe->getName(),
-                'preparation' => $recipe->getPreparation(),
-                'ingredients' => $ingredients,
-            ];
-        }
-
-        return $data;
+        return new RecipeCollection($recipes);
     }
 
     /**
