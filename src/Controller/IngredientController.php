@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class IngredientController extends AbstractController
 {
-    private $ingredientService;
+    private IngredientServiceInterface $ingredientService;
     public const BASE_PATH = '/ingredients';
     public const RETREIVE_FAILED = 'Failed to retrieve ingredients: ';
 
@@ -23,7 +23,13 @@ class IngredientController extends AbstractController
     }
 
 
-    #[Route(self::BASE_PATH, name: 'create', methods: ['POST'])]
+    /**
+     * Crée une collection d'ingrédients à partir du payload JSON.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    #[Route(self::BASE_PATH .'/create', name: 'createIngredients', methods: ['POST'])]
     public function createIngredientsAction(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -66,6 +72,11 @@ class IngredientController extends AbstractController
     }
 
 
+    /**
+     * Retourne la liste complète des ingrédients.
+     *
+     * @return JsonResponse
+     */
     #[Route(self::BASE_PATH, name: 'getIngredientsList', methods: ['GET'])]
     public function getIngredientsListAction(): JsonResponse
     {
@@ -95,6 +106,12 @@ class IngredientController extends AbstractController
         }
     }
 
+    /**
+     * Retourne un ingrédient unique par son nom.
+     *
+     * @param string $name
+     * @return JsonResponse
+     */
     #[Route(self::BASE_PATH . '/single/{name}', name: 'getSingleIngredientByName', methods: ['GET'])]
     public function getSingleIngredientsByNameAction(string $name): JsonResponse
     {
@@ -124,7 +141,13 @@ class IngredientController extends AbstractController
         }
     }
 
-    #[Route('/ingredients/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
+    /**
+     * Retourne plusieurs ingrédients correspondant partiellement au nom.
+     *
+     * @param string $name
+     * @return JsonResponse
+     */
+    #[Route(self::BASE_PATH . '/{name}', name: 'getMultipleIngredientByName', methods: ['GET'])]
     public function getMultipleIngredientsByNameAction(string $name): JsonResponse
     {
         $name = ucfirst($name);
@@ -132,10 +155,6 @@ class IngredientController extends AbstractController
         try {
             // Récupérer les ingrédients correspondant partiellement au name
             $ingredientsCollection = $this->ingredientService->getMultipleIngredientsByName($name);
-
-            if ($ingredientsCollection->isEmpty()) {
-                return new JsonResponse(['error' => 'No ingredients found'], JsonResponse::HTTP_NOT_FOUND);
-            }
 
             // Transformer la collection en tableau de données JSON
             $data = [];
@@ -162,7 +181,10 @@ class IngredientController extends AbstractController
     }
 
     /**
-     * if {id} is not provided, the RouterListener will raise a 404
+     * Supprime un ingrédient unique par son id.
+     *
+     * @param int $id
+     * @return JsonResponse
      */
     #[Route(self::BASE_PATH . '/single/{id}', name: 'deleteSingleIngredientById', methods: ['DELETE'])]
     public function deleteSingleIngredientByIdAction(int $id): JsonResponse
@@ -196,7 +218,11 @@ class IngredientController extends AbstractController
     }
 
     /**
+     * Supprime tous les ingrédients correspondant au nom fourni.
      * if {name} is not provided, the RouterListener will raise a 404
+     *
+     * @param string $name
+     * @return JsonResponse
      */
     #[Route(self::BASE_PATH . '/{name}', name: 'deleteMultipleIngredientsByName', methods: ['DELETE'])]
     public function deleteMultipleIngredientsByNameAction(string $name): JsonResponse
@@ -218,7 +244,13 @@ class IngredientController extends AbstractController
         return $response;
     }
 
-    #[Route('/ingredients', name: 'update', methods: ['PUT'])]
+    /**
+     * Met à jour une collection d'ingrédients depuis le payload JSON.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    #[Route(self::BASE_PATH, name: 'updateIngredients', methods: ['PUT'])]
     public function updateIngredientsAction(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
