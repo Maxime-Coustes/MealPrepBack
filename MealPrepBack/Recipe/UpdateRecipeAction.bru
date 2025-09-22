@@ -1,0 +1,49 @@
+meta {
+  name: UpdateRecipeAction
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://localhost:8000/recipe
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": 4,
+    "name": "Salade 3 ingrédients",
+    "preparation": "Mélanger tous les ingrédients et servir chaud.",
+    "ingredients": [
+      {
+        "id": 2,
+        "name": "Poulet (poitrine) pioupioupiouuu",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "id": 14,
+        "name": "Tomate",
+        "quantity": 200,
+        "unit": "g"
+      },
+      {
+        "id": 9,
+        "name": "Riz basmati (cuit)",
+        "quantity": 100,
+        "unit": "g"
+      },
+      {
+        "id": 12,
+        "name": "Brocoli (cuit)",
+        "quantity": 100,
+        "unit": "100g",
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+}

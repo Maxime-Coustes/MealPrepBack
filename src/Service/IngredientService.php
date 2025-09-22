@@ -9,13 +9,17 @@ use App\Interface\IngredientServiceInterface;
 
 class IngredientService implements IngredientServiceInterface
 {
-    private $ingredientRepository;
+    private IngredientRepository $ingredientRepository;
 
     public function __construct(IngredientRepository $ingredientRepository)
     {
         $this->ingredientRepository = $ingredientRepository;
     }
 
+    /**
+     * @param IngredientCollection $ingredientsCollection
+     * @return array{created: IngredientCollection, existing: IngredientCollection}
+     */
     public function createIngredients(IngredientCollection $ingredientsCollection): array
     {
         $newIngredientCollection = new IngredientCollection();
@@ -41,6 +45,10 @@ class IngredientService implements IngredientServiceInterface
     }
 
 
+    /**
+     * @param Ingredient $ingredient
+     * @return boolean
+     */
     private function checkIfExists(Ingredient $ingredient): bool
     {
         // Vérifie si un ingrédient avec le même name existe déjà dans la base
@@ -51,36 +59,63 @@ class IngredientService implements IngredientServiceInterface
     }
 
 
-    public function getIngredientsList(): array
+    /**
+     * @return IngredientCollection
+     */
+    public function getIngredientsList(): IngredientCollection
     {
-        return $this->ingredientRepository->findAll();
+        return $this->ingredientRepository->getAllIngredients();
     }
 
-    public function getMultipleIngredientsByName(string $name): ?IngredientCollection
+    /**
+     * @param string $name
+     * @return IngredientCollection
+     */
+    public function getMultipleIngredientsByName(string $name): IngredientCollection
     {
         return $this->ingredientRepository->findMultipleByName($name);
     }
 
+    /**
+     * @param IngredientCollection $ingredientCollection
+     * @return void
+     */
     public function deleteMultipleIngredients(IngredientCollection $ingredientCollection): void
     {
         $this->ingredientRepository->deleteMultipleIngredients($ingredientCollection);
     }
 
+    /**
+     * @param Ingredient $ingredient
+     * @return void
+     */
     public function deleteSingleIngredientById(Ingredient $ingredient): void
     {
         $this->ingredientRepository->deleteSingleIngredientById($ingredient);
     }
 
+    /**
+     * @param integer $id
+     * @return Ingredient|null
+     */
     public function findOneById(int $id): ?Ingredient
     {
         return $this->ingredientRepository->findOneById($id);
     }
 
+    /**
+     * @param string $ingredientName
+     * @return Ingredient|null
+     */
     public function findOneByName(string $ingredientName): ?Ingredient
     {
         return $this->ingredientRepository->findOneByName($ingredientName);
     }
 
+    /**
+     * @param IngredientCollection $ingredients
+     * @return array{updated: IngredientCollection, not_found: IngredientCollection}
+     */
     public function updateIngredients(IngredientCollection $ingredients): array
     {
         $toUpdate = new IngredientCollection();
@@ -94,7 +129,7 @@ class IngredientService implements IngredientServiceInterface
                 continue;
             }
 
-            $existing = $this->ingredientRepository->find($id);
+            $existing = $this->ingredientRepository->findOneById($id);
 
             if (!$existing) {
                 $notFound->addIngredient($ingredient);

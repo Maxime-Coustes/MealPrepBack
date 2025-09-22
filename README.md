@@ -1,5 +1,8 @@
 # MealPrepBack
 
+#Backlog
+https://github.com/users/Maxime-Coustes/projects/1/views/1
+
 ## Description
 MealPrepBack est un backend pour l'application de planification de repas, permettant de gérer les ingrédients, les recettes, les profils utilisateurs et les calculs nutritionnels. Ce projet est basé sur Symfony et API Platform.
 
@@ -18,6 +21,7 @@ Avant de commencer, vous devez avoir installé les éléments suivants sur votre
 
 ```bash
 git clone git@github.com:Maxime-Coustes/MealPrepBack.git
+````
 
 2. Accéder au dossier du projet
 cd MealPrepBack
@@ -29,10 +33,14 @@ composer install
 cp .env .env.local
 
 Modifiez .env.local avec vos informations de base de données:
+```bash 
 DATABASE_URL="mysql://username:password@127.0.0.1:3306/mealprepdb?serverVersion=5.7"
+````
 
 5. Exécuter les migrations
+php bin/console make:migration
 php bin/console doctrine:migrations:migrate
+
 
 6. Démarrer le serveur
 symfony serve
@@ -47,11 +55,12 @@ Méthode : GET
 Permet de vérifier que l'API fonctionne.
 
 Réponse :
-
+```JSON
 {
   "status": "success",
   "message": "API is running"
 }
+````
 
 Authentification
 L'API utilise JSON Web Tokens (JWT) pour l'authentification des utilisateurs. Pour obtenir un token, envoyez une requête POST à /api/login avec les informations d'identification (par exemple, email et mot de passe).
@@ -65,3 +74,35 @@ php bin/console doctrine:migrations:generate
 
 # Exécuter la migration
 php bin/console doctrine:migrations:migrate
+
+#### 
+# Tous les tests   ./vendor/bin/phpunit
+./vendor/bin/phpunit
+
+# Un fichier précis (should be in tests/Controller)
+./vendor/bin/phpunit tests/Controller/IngredientControllerTest.php
+
+# Une méthode précise
+./vendor/bin/phpunit --filter testNomDeLaMethode
+
+#phpStan
+./vendor/bin/phpstan analyse 
+
+#################################
+#################################
+#  A DEVELOPPER POUR ACCROITRE LA MAITRISE DE LA GENERATION DE CODE REDONDANT 
+
+# Génération de services et interfaces SOLID
+
+Ce projet inclut deux Makers personnalisés : make:solid-service et make:solid-interface.
+
+````make:solid-service````
+qui permet de générer le squelette d'un service prêt à l’usage pour une entité donnée.
+#Exemple : php bin/console make:solid-service Recipe
+
+
+
+````make:solid-interface````
+qui permet de générer une interface de service SOLID pour une entité donnée.
+#Exemple : php bin/console make:solid-interface Recipe
+

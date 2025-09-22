@@ -1,0 +1,15 @@
+meta {
+  name: IndexAction
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/hello
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
