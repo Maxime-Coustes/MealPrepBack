@@ -26,6 +26,11 @@ class RecipeController extends AbstractController
         ]);
     }
 
+    /**
+     * Récupère la liste de toutes les recettes.
+     *
+     * @return JsonResponse Liste des recettes au format JSON
+     */
     #[Route('/recipes', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {
@@ -34,11 +39,12 @@ class RecipeController extends AbstractController
 
 
     /**
-     * Crée une nouvelle recette à partir d'un payload JSON.
+     * Crée une nouvelle recette à partir du payload JSON fourni.
      *
-     * @param Request $request Le payload JSON contenant 'name' et 'recipeIngredients'
+     * Champs requis : name, recipeIngredients, preparation.
      *
-     * @return JsonResponse La réponse JSON avec l'id, le nom de la recette ou une erreur
+     * @param Request $request Contient le payload JSON de la recette
+     * @return JsonResponse Réponse JSON avec succès, conflit ou erreurs de validation
      */
     #[Route('/recipe', name: 'create', methods: ['POST'])]
     public function createAction(Request $request): JsonResponse
@@ -99,11 +105,10 @@ class RecipeController extends AbstractController
 
 
     /**
-     * Supprime une recette existante par son ID.
+     * Supprime une recette existante par son identifiant.
      *
-     * @param int $id ID de la recette à supprimer
-     *
-     * @return JsonResponse La réponse JSON confirmant la suppression ou une erreur
+     * @param int $id Identifiant unique de la recette
+     * @return JsonResponse Réponse JSON indiquant le succès ou l’erreur rencontrée
      */
     #[Route('/recipes/{id}', name: 'delete', methods: ['DELETE'])]
     public function deleteAction(int $id): JsonResponse
@@ -125,6 +130,14 @@ class RecipeController extends AbstractController
         }
     }
 
+    /**
+     * Met à jour une recette existante.
+     *
+     * Champs requis dans le payload : id, name, ingredients.
+     *
+     * @param Request $request Contient le payload JSON pour la mise à jour
+     * @return JsonResponse Réponse JSON avec les changements appliqués ou un message indiquant qu’aucune modification n’a eu lieu
+     */
     #[Route('/recipe', name: 'update', methods: ['PUT'])]
     public function updateRecipeAction(Request $request): JsonResponse
     {
@@ -147,7 +160,7 @@ class RecipeController extends AbstractController
 
                 $response = [
                     'message' => count($result['added']) || count($result['updated']) || count($result['removed'])
-                    || !empty($result['nameChanged']) || !empty($result['preparationChanged'])
+                        || !empty($result['nameChanged']) || !empty($result['preparationChanged'])
                         ? 'Recipe updated successfully'
                         : 'No changes were made',
                     'nameChanged' => $result['nameChanged'],
