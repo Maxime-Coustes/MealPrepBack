@@ -1,11 +1,11 @@
 meta {
-  name: UpdateIngredients
+  name: GetIngredientsListAction
   type: http
-  seq: 7
+  seq: 3
 }
 
-put {
+get {
   url: http://localhost:8000/ingredients
-  body: json
+  body: none
   auth: none
 }

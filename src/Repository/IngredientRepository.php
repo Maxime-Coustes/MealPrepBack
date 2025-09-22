@@ -22,6 +22,10 @@ class IngredientRepository extends ServiceEntityRepository
         parent::__construct($registry, Ingredient::class);
     }
 
+    /**
+     * @param IngredientCollection $ingredientsCollection
+     * @return void
+     */
     public function createIngredients(IngredientCollection $ingredientsCollection): void
     {
         foreach ($ingredientsCollection->getIngredients() as $ingredient) {
@@ -33,12 +37,20 @@ class IngredientRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function getAllIngredients(): array
+    /**
+     * @return IngredientCollection
+     */
+    public function getAllIngredients(): IngredientCollection
     {
-        return $this->ingredientRepository->findAll();
+        $results = $this->findAll();
+        return new IngredientCollection($results);
     }
 
-    public function findMultipleByName(string $name): ?IngredientCollection
+    /**
+     * @param string $name
+     * @return IngredientCollection
+     */
+    public function findMultipleByName(string $name): IngredientCollection
     {
         $results = $this->createQueryBuilder('i')
             ->where('LOWER(i.name) LIKE LOWER(:name)')
@@ -55,6 +67,10 @@ class IngredientRepository extends ServiceEntityRepository
         return $ingredientsCollection;
     }
 
+    /**
+     * @param string $name
+     * @return Ingredient|null
+     */
     public function findOneByName(string $name): ?Ingredient
     {
         return $this->createQueryBuilder('i')
@@ -64,7 +80,19 @@ class IngredientRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @param integer $id
+     * @return Ingredient|null
+     */
+    public function findOneById(int $id): ?Ingredient
+    {
+        return $this->find($id);
+    }
 
+    /**
+     * @param IngredientCollection $ingredientCollection
+     * @return void
+     */
     public function deleteMultipleIngredients(IngredientCollection $ingredientCollection): void
     {
         foreach ($ingredientCollection->getIngredients() as $ingredient) {
@@ -74,6 +102,10 @@ class IngredientRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * @param Ingredient $ingredient
+     * @return void
+     */
     public function deleteSingleIngredientById(Ingredient $ingredient): void
     {
 
@@ -81,7 +113,10 @@ class IngredientRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-
+    /**
+     * @param IngredientCollection $ingredientCollection
+     * @return IngredientCollection
+     */
     public function updateIngredients(IngredientCollection $ingredientCollection): IngredientCollection
     {
 
