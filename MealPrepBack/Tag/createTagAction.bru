@@ -1,0 +1,15 @@
+meta {
+  name: createTagAction
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8000/tag/create
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
