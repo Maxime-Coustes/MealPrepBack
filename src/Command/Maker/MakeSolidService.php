@@ -63,7 +63,7 @@ class MakeSolidService extends AbstractMaker
         );
 
         $generator->writeChanges();
-
-        $io->success("Service $serviceName généré avec interface $interfaceName, repository $repositoryClass et entité $entityClass ✅");
+// avec interface $interfaceName, repository $repositoryClass et entité $entityClass 
+        $io->success("Service $serviceName généré ✅");
     }
 }
