@@ -16,11 +16,13 @@ interface <?= $interfaceName ?>
     public function create<?= $entityName ?>Collection(<?= basename(str_replace('\\', '/', $entityName)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityName))) ?>Collection): array;
 
     /**
-     * Met à jour une entité <?= basename(str_replace('\\', '/', $entityName)) ?>.
-     *
-     * @param <?= basename(str_replace('\\', '/', $entityName)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityName))) ?>
-     */
-    public function update(<?= basename(str_replace('\\', '/', $entityName)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityName))) ?>): void;
+    * Met à jour une collection d'entités <?= basename(str_replace('\\', '/', $entityName)) ?>.
+    *
+    * @param <?= basename(str_replace('\\', '/', $entityName)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityName))) ?>Collection
+    * @return array{updated: <?= basename(str_replace('\\', '/', $entityName)) ?>Collection, not_found: <?= basename(str_replace('\\', '/', $entityName)) ?>Collection}
+    */
+    public function update<?= basename(str_replace('\\', '/', $entityName)) ?>s(<?= basename(str_replace('\\', '/', $entityName)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityName))) ?>Collection): array;
+
 
     /**
      * Supprime une entité <?= basename(str_replace('\\', '/', $entityName)) ?> par son ID.

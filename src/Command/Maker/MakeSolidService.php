@@ -48,6 +48,15 @@ class MakeSolidService extends AbstractMaker
         $repositoryClass = "App\\Repository\\{$entityName}Repository";
         $repositoryShortName = "{$entityName}Repository";
         $serviceName = "{$entityName}Service";
+        $columns = [];
+        $reflection = new \ReflectionClass("App\\Entity\\$entityName");
+        foreach ($reflection->getProperties() as $property) {
+            // On filtre uniquement les propriétés annotées #[ORM\Column]
+            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
+            if (!empty($attrs)) {
+                $columns[] = $property->getName();
+            }
+        }
 
         $generator->generateClass(
             "App\\Service\\$serviceName",
@@ -59,11 +68,11 @@ class MakeSolidService extends AbstractMaker
                 'entityClass' => $entityClass,
                 'repositoryClass' => $repositoryClass,
                 'repositoryShortName' => $repositoryShortName,
+                'columns' => $columns,
             ]
         );
 
         $generator->writeChanges();
-// avec interface $interfaceName, repository $repositoryClass et entité $entityClass 
         $io->success("Service $serviceName généré ✅");
     }
 }

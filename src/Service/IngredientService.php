@@ -115,6 +115,7 @@ class IngredientService implements IngredientServiceInterface
     /**
      * @param IngredientCollection $ingredients
      * @return array{updated: IngredientCollection, not_found: IngredientCollection}
+     * @TODO : improve this method using new \ReflectionClass($this->repository->getEntityClass());
      */
     public function updateIngredients(IngredientCollection $ingredients): array
     {

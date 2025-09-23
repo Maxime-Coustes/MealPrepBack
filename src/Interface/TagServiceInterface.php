@@ -15,9 +15,11 @@ interface TagServiceInterface
     public function createTagCollection(TagCollection $tagCollection): array;
 
     /**
-     * Met à jour une entité Tag.
+     * Met à jour une collection d'entités Tag.
+     *
+     * @return array{updated: TagCollection, not_found: TagCollection}
      */
-    public function update(Tag $tag): void;
+    public function updateTags(TagCollection $tagCollection): array;
 
     /**
      * Supprime une entité Tag par son ID.

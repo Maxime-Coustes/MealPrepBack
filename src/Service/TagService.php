@@ -42,9 +42,69 @@ class TagService implements TagServiceInterface
         ];
     }
 
-    public function update(Tag $tag): void
+    /**
+     * Met à jour une collection d'entités Tag.
+     *
+     * @return array{updated: TagCollection, not_found: TagCollection}
+     */
+    public function updateTags(TagCollection $tagCollection): array
     {
-        exit;
+        $toUpdate = new TagCollection();
+        $notFound = new TagCollection();
+
+        // Récupération dynamique des propriétés simples via Reflection
+        $columns = [];
+        $reflection = new \ReflectionClass($this->repository->getEntityClass());
+
+        foreach ($reflection->getProperties() as $property) {
+            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
+
+            if (!empty($attrs)) {
+                $columns[] = $property->getName();
+            }
+        }
+
+        foreach ($tagCollection->getTags() as $tag) {
+            $id = $tag->getId();
+
+            if (null === $id) {
+                $notFound->addTag($tag);
+
+                continue;
+            }
+
+            $existing = $this->repository->find($id);
+
+            if (!$existing) {
+                $notFound->addTag($tag);
+
+                continue;
+            }
+
+            // Vérifie si au moins une propriété a changé
+            $hasChanged = false;
+
+            foreach ($columns as $column) {
+                $getter = 'get'.ucfirst($column);
+                $setter = 'set'.ucfirst($column);
+
+                if ($existing->$getter() !== $tag->$getter()) {
+                    $existing->$setter($tag->$getter());
+                    $hasChanged = true;
+                }
+            }
+
+            if ($hasChanged) {
+                $toUpdate->addTag($existing);
+            }
+        }
+
+        $this->repository->updateTags($toUpdate);
+
+        return [
+            'updated' => $toUpdate,
+            'not_found' => $notFound,
+        ];
     }
 
     /**

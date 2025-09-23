@@ -45,10 +45,66 @@ class <?= $name ?> implements <?= $interface ?>
     }
 
 
-    public function update(<?= basename(str_replace('\\', '/', $entityClass)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>): void
+    /**
+    * Met à jour une collection d'entités <?= basename(str_replace('\\', '/', $entityClass)) ?>.
+    *
+    * @param <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection
+    * @return array{updated: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection, not_found: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection}
+    */
+    public function update<?= basename(str_replace('\\', '/', $entityClass)) ?>s(<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection): array
     {
-        die;
+        $toUpdate = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
+        $notFound = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
+
+        // Récupération dynamique des propriétés simples via Reflection
+        $columns = [];
+        $reflection = new \ReflectionClass($this->repository->getEntityClass());
+        foreach ($reflection->getProperties() as $property) {
+            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
+            if (!empty($attrs)) {
+                $columns[] = $property->getName();
+            }
+        }
+
+        foreach ($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection->get<?= basename(str_replace('\\', '/', $entityClass)) ?>s() as $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>) {
+            $id = $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->getId();
+
+            if ($id === null) {
+                $notFound->add<?= basename(str_replace('\\', '/', $entityClass)) ?>($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>);
+                continue;
+            }
+
+            $existing = $this->repository->find($id);
+            if (!$existing) {
+                $notFound->add<?= basename(str_replace('\\', '/', $entityClass)) ?>($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>);
+                continue;
+            }
+
+            // Vérifie si au moins une propriété a changé
+            $hasChanged = false;
+            foreach ($columns as $column) {
+                $getter = 'get' . ucfirst($column);
+                $setter = 'set' . ucfirst($column);
+                if ($existing->$getter() !== $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->$getter()) {
+                    $existing->$setter($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->$getter());
+                    $hasChanged = true;
+                }
+            }
+
+            if ($hasChanged) {
+                $toUpdate->add<?= basename(str_replace('\\', '/', $entityClass)) ?>($existing);
+            }
+        }
+
+        $this->repository->update<?= basename(str_replace('\\', '/', $entityClass)) ?>s($toUpdate);
+
+        return [
+            'updated' => $toUpdate,
+            'not_found' => $notFound,
+        ];
     }
+
+
 
     /**
     * Supprime une entité <?= basename(str_replace('\\', '/', $entityClass)) ?> par son ID.
