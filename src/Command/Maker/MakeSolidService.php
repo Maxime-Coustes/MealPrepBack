@@ -37,7 +37,7 @@ class MakeSolidService extends AbstractMaker
         );
     }
 
-    public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
+    public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator): void
     {
         $entityName = $input->getArgument('entityName');
 

@@ -3,3 +3,5 @@ parameters:
     paths:
         - src
         - tests
+    ignoreErrors:
+        - '#Property .* is never assigned#'  # ignore les warnings sur les IDs auto-incrémentés
