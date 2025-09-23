@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Tag;
+use App\Entity\TagCollection;
 use App\Interface\TagServiceInterface;
 use App\Repository\TagRepository;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -16,18 +17,12 @@ class TagService implements TagServiceInterface
         $this->repository = $repository;
     }
 
-    // Exemple de méthodes avec l’entité
-    public function create(Tag $tag): void
-    {
-        exit;
-    }
-
     /**
      * Crée de nouvelles entités {{ entityClass|basename }} à partir d'une collection.
      *
      * @return array{created: TagCollection, existing: TagCollection}
      */
-    public function createTags(TagCollection $tagCollection): array
+    public function createTagCollection(TagCollection $tagCollection): array
     {
         $newTagCollection = new TagCollection();
         $existing = new TagCollection();

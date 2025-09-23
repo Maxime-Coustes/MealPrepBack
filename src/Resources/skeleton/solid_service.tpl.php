@@ -5,6 +5,8 @@ namespace App\Service;
 use <?= $interfaceNamespace ?>;
 use <?= $repositoryClass ?>;
 use <?= $entityClass ?>;
+use <?= $entityClass ?>Collection;
+
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class <?= $name ?> implements <?= $interface ?>
@@ -16,19 +18,13 @@ class <?= $name ?> implements <?= $interface ?>
         $this->repository = $repository;
     }
 
-    // Exemple de méthodes avec l’entité
-    public function create(<?= basename(str_replace('\\', '/', $entityClass)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>): void
-    {
-        die;
-    }
-
-        /**
+    /**
      * Crée de nouvelles entités {{ entityClass|basename }} à partir d'une collection.
      *
      * @param <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection
      * @return array{created: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection, existing: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection}
      */
-    public function create<?= basename(str_replace('\\', '/', $entityClass)) ?>s(<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection): array
+    public function create<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection(<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection): array
     {
         $new<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
         $existing = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
