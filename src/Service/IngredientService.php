@@ -17,32 +17,101 @@ class IngredientService implements IngredientServiceInterface
     }
 
     /**
-     * @param IngredientCollection $ingredientsCollection
+     * @param array<int, array<string, mixed>> $ingredientsData
      * @return array{created: IngredientCollection, existing: IngredientCollection}
      */
-    public function createIngredients(IngredientCollection $ingredientsCollection): array
+    public function createIngredients(array $ingredientsData): array
     {
+        $columns = $this->getDoctrineColumns();
+
         $newIngredientCollection = new IngredientCollection();
         $existing = new IngredientCollection();
 
-        foreach ($ingredientsCollection->getIngredients() as $ingredient) {
-            // Vérifie si l'ingrédient existe déjà
-            $exist = $this->checkIfExists($ingredient);
+        foreach ($ingredientsData as $ingredientArray) {
+            $ingredient = $this->createIngredientFromArray($ingredientArray);
+            $this->applyGenericRules($ingredient, $columns);
 
-            if ($exist) {
+            if ($this->checkIfExists($ingredient)) {
                 $existing->addIngredient($ingredient);
             } else {
-                // Si l'ingrédient n'existe pas, on l'ajoute à la nouvelle collection
                 $newIngredientCollection->addIngredient($ingredient);
-                $this->ingredientRepository->createIngredients($newIngredientCollection);
             }
         }
+
+        if (!$newIngredientCollection->isEmpty()) {
+            $this->ingredientRepository->createIngredients($newIngredientCollection);
+        }
+
 
         return [
             'created' => $newIngredientCollection,
             'existing' => $existing,
         ];
     }
+
+    /**
+     * Retourne les colonnes Doctrine, sauf l'id auto-généré.
+     *
+     * @return string[]
+     */
+    private function getDoctrineColumns(): array
+    {
+        $entityClass = $this->ingredientRepository->getEntityClass();
+        $reflection = new \ReflectionClass($entityClass);
+
+        $columns = [];
+        foreach ($reflection->getProperties() as $property) {
+            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
+            if (!empty($attrs) && $property->getName() !== 'id') {
+                $columns[] = $property->getName();
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
+     * Crée un Ingredient à partir d'un tableau de données.
+     */
+    private function createIngredientFromArray(array $data): Ingredient
+    {
+        $ingredient = new Ingredient();
+        foreach ($data as $key => $value) {
+            $setter = 'set' . ucfirst($key);
+            if (method_exists($ingredient, $setter)) {
+                $ingredient->$setter($value);
+            }
+        }
+        return $ingredient;
+    }
+
+    /**
+     * Applique les règles génériques sur un Ingredient.
+     *
+     * @param string[] $columns
+     */
+    private function applyGenericRules(Ingredient $ingredient, array $columns): void
+    {
+        foreach ($columns as $column) {
+            $getter = 'get' . ucfirst($column);
+            $setter = 'set' . ucfirst($column);
+
+            if (!method_exists($ingredient, $getter) || !method_exists($ingredient, $setter)) {
+                continue;
+            }
+
+            $value = $ingredient->$getter();
+
+            if ($column === 'name' && $value !== null) {
+                $value = ucfirst(strtolower($value));
+            }
+
+            $ingredient->$setter($value);
+        }
+    }
+
+
+
 
 
     /**

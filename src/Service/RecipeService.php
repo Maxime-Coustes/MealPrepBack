@@ -57,52 +57,6 @@ class RecipeService implements RecipeServiceInterface
      * @throws BadRequestHttpException
      * @throws \Throwable
      */
-    // public function create(array $recipePayload): array
-    // {
-    //     // Vérifie si la recette existe déjà
-    //     $recipeAlreadyExists = $this->checkIfExists($recipePayload);
-
-    //     if ($recipeAlreadyExists) {
-    //         return [
-    //             'conflict' => $recipePayload['name'],
-    //         ];
-    //     }
-
-    //     // Sinon, on crée une nouvelle recette
-    //     $recipeToCreate = new Recipe();
-    //     $recipeToCreate->setName($recipePayload['name']);
-    //     $recipeToCreate->setPreparation($recipePayload['preparation'] ?? null);
-
-    //     foreach ($recipePayload['recipeIngredients'] as $recipeIngredientsData) {
-    //         $ingredient = $this->findIngredient($recipeIngredientsData['ingredient'] ?? 0);
-    //         if (!$ingredient) {
-    //             throw new BadRequestHttpException("Ingredient with id {$recipeIngredientsData['ingredient']} not found");
-    //         }
-
-    //         $recipeIngredient = new RecipeIngredient();
-    //         $recipeIngredient->setIngredient($ingredient);
-    //         $recipeIngredient->setRecipe($recipeToCreate);
-    //         $recipeIngredient->setQuantity(floatval($recipeIngredientsData['quantity'] ?? 0));
-    //         $recipeIngredient->setUnit($recipeIngredientsData['unit'] ?? '');
-
-    //         $recipeToCreate->addRecipeIngredient($recipeIngredient);
-    //     }
-
-    //     $this->repository->createRecipe($recipeToCreate);
-
-    //     return [
-    //         'created' => $recipeToCreate,
-    //     ];
-    // }
-    /**
-     * Crée une nouvelle recette et ses RecipeIngredient associés.
-     *
-     * @param array<string, mixed> $recipePayload
-     * @return array{created: Recipe}|array{conflict: string}
-     *
-     * @throws BadRequestHttpException
-     * @throws \Throwable
-     */
     public function create(array $recipePayload): array
     {
         // Vérifie si la recette existe déjà

@@ -7,12 +7,8 @@ use App\Entity\IngredientCollection;
 
 interface IngredientServiceInterface
 {
-    /**
-     *
-     * @param IngredientCollection $ingredients
-     * @return array{created: IngredientCollection, existing: IngredientCollection}
-     */
-    public function createIngredients(IngredientCollection $ingredients): array;
+
+    public function createIngredients(array $ingredients): array;
     /**
      *
      * @return IngredientCollection
