@@ -57,6 +57,52 @@ class RecipeService implements RecipeServiceInterface
      * @throws BadRequestHttpException
      * @throws \Throwable
      */
+    // public function create(array $recipePayload): array
+    // {
+    //     // Vérifie si la recette existe déjà
+    //     $recipeAlreadyExists = $this->checkIfExists($recipePayload);
+
+    //     if ($recipeAlreadyExists) {
+    //         return [
+    //             'conflict' => $recipePayload['name'],
+    //         ];
+    //     }
+
+    //     // Sinon, on crée une nouvelle recette
+    //     $recipeToCreate = new Recipe();
+    //     $recipeToCreate->setName($recipePayload['name']);
+    //     $recipeToCreate->setPreparation($recipePayload['preparation'] ?? null);
+
+    //     foreach ($recipePayload['recipeIngredients'] as $recipeIngredientsData) {
+    //         $ingredient = $this->findIngredient($recipeIngredientsData['ingredient'] ?? 0);
+    //         if (!$ingredient) {
+    //             throw new BadRequestHttpException("Ingredient with id {$recipeIngredientsData['ingredient']} not found");
+    //         }
+
+    //         $recipeIngredient = new RecipeIngredient();
+    //         $recipeIngredient->setIngredient($ingredient);
+    //         $recipeIngredient->setRecipe($recipeToCreate);
+    //         $recipeIngredient->setQuantity(floatval($recipeIngredientsData['quantity'] ?? 0));
+    //         $recipeIngredient->setUnit($recipeIngredientsData['unit'] ?? '');
+
+    //         $recipeToCreate->addRecipeIngredient($recipeIngredient);
+    //     }
+
+    //     $this->repository->createRecipe($recipeToCreate);
+
+    //     return [
+    //         'created' => $recipeToCreate,
+    //     ];
+    // }
+    /**
+     * Crée une nouvelle recette et ses RecipeIngredient associés.
+     *
+     * @param array<string, mixed> $recipePayload
+     * @return array{created: Recipe}|array{conflict: string}
+     *
+     * @throws BadRequestHttpException
+     * @throws \Throwable
+     */
     public function create(array $recipePayload): array
     {
         // Vérifie si la recette existe déjà
@@ -68,12 +114,30 @@ class RecipeService implements RecipeServiceInterface
             ];
         }
 
-        // Sinon, on crée une nouvelle recette
-        $recipeToCreate = new Recipe();
-        $recipeToCreate->setName($recipePayload['name']);
-        $recipeToCreate->setPreparation($recipePayload['preparation'] ?? null);
+        // Instanciation dynamique de la bonne entité via Reflection
+        $entityClass = $this->repository->getEntityClass();
+        $recipeToCreate = new $entityClass();
+        // Reflection pour déterminer les colonnes Doctrine
+        $reflection = new \ReflectionClass($entityClass);
+        $columns = [];
+        foreach ($reflection->getProperties() as $property) {
+            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
+            if (!empty($attrs)) {
+                $columns[] = $property->getName();
+            }
+        }
+        // On remplit dynamiquement les propriétés scalaires
+        foreach ($columns as $column) {
+            if (array_key_exists($column, $recipePayload)) {
+                $setter = 'set' . ucfirst($column);
+                if (method_exists($recipeToCreate, $setter)) {
+                    $recipeToCreate->$setter($recipePayload[$column]);
+                }
+            }
+        }
 
-        foreach ($recipePayload['recipeIngredients'] as $recipeIngredientsData) {
+        // Cas particulier : gestion des relations (RecipeIngredients)
+        foreach ($recipePayload['recipeIngredients'] ?? [] as $recipeIngredientsData) {
             $ingredient = $this->findIngredient($recipeIngredientsData['ingredient'] ?? 0);
             if (!$ingredient) {
                 throw new BadRequestHttpException("Ingredient with id {$recipeIngredientsData['ingredient']} not found");
@@ -88,12 +152,14 @@ class RecipeService implements RecipeServiceInterface
             $recipeToCreate->addRecipeIngredient($recipeIngredient);
         }
 
+        // Persistance
         $this->repository->createRecipe($recipeToCreate);
 
         return [
             'created' => $recipeToCreate,
         ];
     }
+
 
 
     /**
@@ -254,7 +320,9 @@ class RecipeService implements RecipeServiceInterface
                 }
             } else {
                 $ingredient = $this->ingredientService->findOneById($id);
-                if(!$ingredient){  continue; }
+                if (!$ingredient) {
+                    continue;
+                }
 
                 $ri = new RecipeIngredient();
                 $ri->setIngredient($ingredient)
