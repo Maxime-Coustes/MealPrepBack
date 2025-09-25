@@ -39,4 +39,38 @@ class DoctrineHelper
 
         return $columns;
     }
+
+    /**
+     * Remplit les propriétés d'une entité à partir d'un tableau.
+     *
+     * @template T
+     * @param class-string<T>|T $entityOrClass Instance ou nom de la classe de l'entité
+     * @param array<string, mixed> $data Tableau associatif [champ => valeur]
+     * @param bool $useDoctrineColumns Si true, ne prend que les colonnes Doctrine scalaires (optionnel)
+     * si false tous les champs du tableau seront passés aux setters de l’objet
+     * @return T
+     */
+    public static function populateEntityFromArray(string|object $entityOrClass, array $data, bool $useDoctrineColumns = true): object
+    {
+        $entity = is_object($entityOrClass) ? $entityOrClass : new $entityOrClass();
+        $columns = null;
+
+        if ($useDoctrineColumns && is_string($entityOrClass)) {
+            $className = is_string($entityOrClass) ? $entityOrClass : get_class($entity);
+            $columns = self::getDoctrineColumns($className);
+        }
+
+        foreach ($data as $key => $value) {
+            if ($columns !== null && !in_array($key, $columns, true)) {
+                continue;
+            }
+
+            $setter = 'set' . ucfirst($key);
+            if (method_exists($entity, $setter)) {
+                $entity->$setter($value);
+            }
+        }
+
+        return $entity;
+    }
 }

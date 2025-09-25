@@ -29,7 +29,8 @@ class IngredientService implements IngredientServiceInterface
         $existing = new IngredientCollection();
 
         foreach ($ingredientsData as $ingredientArray) {
-            $ingredient = $this->createIngredientFromArray($ingredientArray);
+            $ingredient = DoctrineHelper::populateEntityFromArray(Ingredient::class, $ingredientArray, false);
+
             $this->applyGenericRules($ingredient, $columns);
 
             if ($this->checkIfExists($ingredient)) {
@@ -50,20 +51,6 @@ class IngredientService implements IngredientServiceInterface
         ];
     }
 
-    /**
-     * Crée un Ingredient à partir d'un tableau de données.
-     */
-    private function createIngredientFromArray(array $data): Ingredient
-    {
-        $ingredient = new Ingredient();
-        foreach ($data as $key => $value) {
-            $setter = 'set' . ucfirst($key);
-            if (method_exists($ingredient, $setter)) {
-                $ingredient->$setter($value);
-            }
-        }
-        return $ingredient;
-    }
 
     /**
      * Applique les règles génériques sur un Ingredient.

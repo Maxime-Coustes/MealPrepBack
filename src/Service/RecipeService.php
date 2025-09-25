@@ -68,7 +68,8 @@ class RecipeService implements RecipeServiceInterface
         }
 
         // Création de l’entité Recipe et remplissage des propriétés scalaires via Reflection
-        $recipeToCreate = $this->buildRecipeEntity($recipePayload);
+        /** @var Recipe $recipeToCreate */
+        $recipeToCreate = DoctrineHelper::populateEntityFromArray($this->repository->getEntityClass(), $recipePayload);
 
         // Gestion des relations RecipeIngredients
         foreach ($recipePayload['recipeIngredients'] ?? [] as $recipeIngredientsData) {
@@ -92,29 +93,6 @@ class RecipeService implements RecipeServiceInterface
         return [
             'created' => $recipeToCreate,
         ];
-    }
-
-    /**
-     * Construit une entité Recipe et remplit ses propriétés scalaires depuis un payload
-     *
-     * @param array<string, mixed> $payload
-     * @return Recipe
-     */
-    private function buildRecipeEntity(array $payload): Recipe
-    {
-        $entityClass = $this->repository->getEntityClass();
-        $recipe = new $entityClass();
-
-        foreach (DoctrineHelper::getDoctrineColumns($entityClass) as $column) {
-            if (array_key_exists($column, $payload)) {
-                $setter = 'set' . ucfirst($column);
-                if (method_exists($recipe, $setter)) {
-                    $recipe->$setter($payload[$column]);
-                }
-            }
-        }
-
-        return $recipe;
     }
 
     /**
