@@ -8,6 +8,10 @@ use App\Entity\IngredientCollection;
 interface IngredientServiceInterface
 {
 
+    /**
+     * @param array ingredients
+     * @return array
+     */
     public function createIngredients(array $ingredients): array;
     /**
      *

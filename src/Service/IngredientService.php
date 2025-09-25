@@ -6,6 +6,7 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
 use App\Repository\IngredientRepository;
 use App\Interface\IngredientServiceInterface;
+use Src\Utils\DoctrineHelper;
 
 class IngredientService implements IngredientServiceInterface
 {
@@ -22,7 +23,7 @@ class IngredientService implements IngredientServiceInterface
      */
     public function createIngredients(array $ingredientsData): array
     {
-        $columns = $this->getDoctrineColumns();
+        $columns = DoctrineHelper::getDoctrineColumns($this->ingredientRepository->getEntityClass());
 
         $newIngredientCollection = new IngredientCollection();
         $existing = new IngredientCollection();
@@ -47,27 +48,6 @@ class IngredientService implements IngredientServiceInterface
             'created' => $newIngredientCollection,
             'existing' => $existing,
         ];
-    }
-
-    /**
-     * Retourne les colonnes Doctrine, sauf l'id auto-généré.
-     *
-     * @return string[]
-     */
-    private function getDoctrineColumns(): array
-    {
-        $entityClass = $this->ingredientRepository->getEntityClass();
-        $reflection = new \ReflectionClass($entityClass);
-
-        $columns = [];
-        foreach ($reflection->getProperties() as $property) {
-            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
-            if (!empty($attrs) && $property->getName() !== 'id') {
-                $columns[] = $property->getName();
-            }
-        }
-
-        return $columns;
     }
 
     /**
@@ -109,10 +89,6 @@ class IngredientService implements IngredientServiceInterface
             $ingredient->$setter($value);
         }
     }
-
-
-
-
 
     /**
      * @param Ingredient $ingredient

@@ -8,6 +8,7 @@ use App\Entity\RecipeCollection;
 use App\Entity\RecipeIngredient;
 use App\Interface\RecipeServiceInterface;
 use App\Repository\RecipeRepository;
+use Src\Utils\DoctrineHelper;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -60,37 +61,16 @@ class RecipeService implements RecipeServiceInterface
     public function create(array $recipePayload): array
     {
         // Vérifie si la recette existe déjà
-        $recipeAlreadyExists = $this->checkIfExists($recipePayload);
-
-        if ($recipeAlreadyExists) {
+        if ($this->checkIfExists($recipePayload)) {
             return [
                 'conflict' => $recipePayload['name'],
             ];
         }
 
-        // Instanciation dynamique de la bonne entité via Reflection
-        $entityClass = $this->repository->getEntityClass();
-        $recipeToCreate = new $entityClass();
-        // Reflection pour déterminer les colonnes Doctrine
-        $reflection = new \ReflectionClass($entityClass);
-        $columns = [];
-        foreach ($reflection->getProperties() as $property) {
-            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
-            if (!empty($attrs)) {
-                $columns[] = $property->getName();
-            }
-        }
-        // On remplit dynamiquement les propriétés scalaires
-        foreach ($columns as $column) {
-            if (array_key_exists($column, $recipePayload)) {
-                $setter = 'set' . ucfirst($column);
-                if (method_exists($recipeToCreate, $setter)) {
-                    $recipeToCreate->$setter($recipePayload[$column]);
-                }
-            }
-        }
+        // Création de l’entité Recipe et remplissage des propriétés scalaires via Reflection
+        $recipeToCreate = $this->buildRecipeEntity($recipePayload);
 
-        // Cas particulier : gestion des relations (RecipeIngredients)
+        // Gestion des relations RecipeIngredients
         foreach ($recipePayload['recipeIngredients'] ?? [] as $recipeIngredientsData) {
             $ingredient = $this->findIngredient($recipeIngredientsData['ingredient'] ?? 0);
             if (!$ingredient) {
@@ -114,7 +94,28 @@ class RecipeService implements RecipeServiceInterface
         ];
     }
 
+    /**
+     * Construit une entité Recipe et remplit ses propriétés scalaires depuis un payload
+     *
+     * @param array<string, mixed> $payload
+     * @return Recipe
+     */
+    private function buildRecipeEntity(array $payload): Recipe
+    {
+        $entityClass = $this->repository->getEntityClass();
+        $recipe = new $entityClass();
 
+        foreach (DoctrineHelper::getDoctrineColumns($entityClass) as $column) {
+            if (array_key_exists($column, $payload)) {
+                $setter = 'set' . ucfirst($column);
+                if (method_exists($recipe, $setter)) {
+                    $recipe->$setter($payload[$column]);
+                }
+            }
+        }
+
+        return $recipe;
+    }
 
     /**
      * @param array<string, mixed> $recipePayload
