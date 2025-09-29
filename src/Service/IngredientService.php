@@ -53,9 +53,18 @@ class IngredientService implements IngredientServiceInterface
 
 
     /**
-     * Applique les règles génériques sur un Ingredient.
+     * Applique des règles de normalisation sur les propriétés de l'entité Ingredient
+     * en fonction des colonnes connues de Doctrine.
      *
-     * @param string[] $columns
+     * Actuellement :
+     * - "name" : force la casse à "Majuscule + minuscules" (ex: "tomate" => "Tomate").
+     *
+     * La méthode est conçue pour être extensible et permettre d'ajouter d'autres règles
+     * de nettoyage ou de validation génériques sur les champs de l'entité avant persistance.
+     *
+     * @param Ingredient $ingredient L'entité sur laquelle appliquer les règles.
+     * @param string[]   $columns    Les colonnes Doctrine de l'entité (utilisées pour trouver
+     *                               dynamiquement getters et setters).
      */
     private function applyGenericRules(Ingredient $ingredient, array $columns): void
     {
@@ -72,7 +81,6 @@ class IngredientService implements IngredientServiceInterface
             if ($column === 'name' && $value !== null) {
                 $value = ucfirst(strtolower($value));
             }
-
             $ingredient->$setter($value);
         }
     }
