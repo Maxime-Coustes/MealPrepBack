@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 class IngredientRepository extends AbstractSolidRepository

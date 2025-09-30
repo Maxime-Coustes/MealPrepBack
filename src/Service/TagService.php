@@ -6,6 +6,7 @@ use App\Entity\Tag;
 use App\Entity\TagCollection;
 use App\Interface\TagServiceInterface;
 use App\Repository\TagRepository;
+use Src\Utils\DoctrineHelper;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TagService implements TagServiceInterface
@@ -18,28 +19,67 @@ class TagService implements TagServiceInterface
     }
 
     /**
-     * Crée de nouvelles entités {{ entityClass|basename }} à partir d'une collection.
+     * Crée de nouvelles entités Tag à partir d'une collection.
      *
      * @return array{created: TagCollection, existing: TagCollection}
      */
     public function createTagCollection(TagCollection $tagCollection): array
     {
+        $columns = DoctrineHelper::getDoctrineColumns($this->repository->getEntityClass());
+
         $newTagCollection = new TagCollection();
         $existing = new TagCollection();
 
         foreach ($tagCollection->getTags() as $tag) {
+            // Appliquer les règles génériques (ex: normalisation du nom)
+            $this->applyGenericRules($tag, $columns);
+
             if ($this->checkIfExists($tag)) {
+                $tag = $this->repository->findOneBy([
+                    'name' => $tag->getName(),
+                ]);
                 $existing->addTag($tag);
             } else {
                 $newTagCollection->addTag($tag);
-                $this->repository->createTag($tag);
             }
+        }
+
+        if (!$newTagCollection->isEmpty()) {
+            $this->repository->createTags($newTagCollection);
         }
 
         return [
             'created' => $newTagCollection,
             'existing' => $existing,
         ];
+    }
+
+    /**
+     * Applique des règles de normalisation sur les propriétés de l'entité Tag    * en fonction des colonnes connues de Doctrine.
+     *
+     * Exemple actuel :
+     * - "name" : force la casse à "Majuscule + minuscules".
+     *
+     * @param Tag $tag * @param string[] $columns
+     */
+    private function applyGenericRules(Tag $tag, array $columns): void
+    {
+        foreach ($columns as $column) {
+            $getter = 'get'.ucfirst($column);
+            $setter = 'set'.ucfirst($column);
+
+            if (!method_exists($tag, $getter) || !method_exists($tag, $setter)) {
+                continue;
+            }
+
+            $value = $tag->$getter();
+
+            if ('name' === $column && null !== $value) {
+                $value = ucfirst(strtolower($value));
+            }
+
+            $tag->$setter($value);
+        }
     }
 
     /**
@@ -125,7 +165,7 @@ class TagService implements TagServiceInterface
         $entity = $this->repository->find($id);
 
         if (!$entity) {
-            throw new NotFoundHttpException(sprintf('%s with id %d not found.', $id, $entity));
+            throw new NotFoundHttpException(sprintf(' Tag with id %d not found.', $id));
         }
         $this->repository->deleteTag($entity);
     }

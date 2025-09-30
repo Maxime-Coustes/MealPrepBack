@@ -4,13 +4,10 @@ namespace App\Repository;
 
 use App\Entity\Tag;
 use App\Entity\TagCollection;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Tag>
- */
-class TagRepository extends ServiceEntityRepository
+
+class TagRepository extends AbstractSolidRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -23,6 +20,22 @@ class TagRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($tag);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Persiste plusieurs Tags à partir d'une TagCollection.
+     */
+    public function createTags(TagCollection $tags): void
+    {
+        foreach ($tags->getTags() as $tag) {
+            $this->getEntityManager()->persist($tag);
+        }
+        $this->getEntityManager()->flush();
+    }
+
+        public function getEntityClass(): string
+    {
+        return Tag::class;
     }
 
     /**
@@ -44,6 +57,7 @@ class TagRepository extends ServiceEntityRepository
         $this->getEntityManager()->remove($tag);
         $this->getEntityManager()->flush();
     }
+
 
     /**
      * Cherche un Tag par son nom.

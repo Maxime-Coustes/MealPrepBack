@@ -6,6 +6,7 @@ use <?= $interfaceNamespace ?>;
 use <?= $repositoryClass ?>;
 use <?= $entityClass ?>;
 use <?= $entityClass ?>Collection;
+use Src\Utils\DoctrineHelper;
 
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -19,30 +20,72 @@ class <?= $name ?> implements <?= $interface ?>
     }
 
     /**
-     * Crée de nouvelles entités {{ entityClass|basename }} à partir d'une collection.
-     *
-     * @param <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection
-     * @return array{created: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection, existing: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection}
-     */
+    * Crée de nouvelles entités <?= basename(str_replace('\\', '/', $entityClass)) ?> à partir d'une collection.
+    *
+    * @param <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection
+    * @return array{created: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection, existing: <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection}
+    */
     public function create<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection(<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection): array
     {
+        $columns = DoctrineHelper::getDoctrineColumns($this->repository->getEntityClass());
+
         $new<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
         $existing = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
 
         foreach ($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>Collection->get<?= basename(str_replace('\\', '/', $entityClass)) ?>s() as $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>) {
+            // Appliquer les règles génériques (ex: normalisation du nom)
+            $this->applyGenericRules($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>, $columns);
+
             if ($this->checkIfExists($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>)) {
+                $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?> = $this->repository->findOneBy([
+                    'name' => $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->getName()
+                ]);
                 $existing->add<?= basename(str_replace('\\', '/', $entityClass)) ?>($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>);
             } else {
                 $new<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection->add<?= basename(str_replace('\\', '/', $entityClass)) ?>($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>);
-                $this->repository->create<?= basename(str_replace('\\', '/', $entityClass)) ?>($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>);
             }
         }
 
+        if (!$new<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection->isEmpty()) {
+            $this->repository->create<?= basename(str_replace('\\', '/', $entityClass)) ?>s($new<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection);
+        }
+
         return [
-            'created' => $new<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection,
+            'created'  => $new<?= basename(str_replace('\\', '/', $entityClass)) ?>Collection,
             'existing' => $existing,
         ];
     }
+
+    /**
+    * Applique des règles de normalisation sur les propriétés de l'entité <?= basename(str_replace('\\', '/', $entityClass)) ?>
+    * en fonction des colonnes connues de Doctrine.
+    *
+    * Exemple actuel :
+    * - "name" : force la casse à "Majuscule + minuscules".
+    *
+    * @param <?= basename(str_replace('\\', '/', $entityClass)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>
+    * @param string[] $columns
+    */
+    private function applyGenericRules(<?= basename(str_replace('\\', '/', $entityClass)) ?> $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>, array $columns): void
+    {
+        foreach ($columns as $column) {
+            $getter = 'get' . ucfirst($column);
+            $setter = 'set' . ucfirst($column);
+
+            if (!method_exists($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>, $getter) || !method_exists($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>, $setter)) {
+                continue;
+            }
+
+            $value = $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->$getter();
+
+            if ($column === 'name' && $value !== null) {
+                $value = ucfirst(strtolower($value));
+            }
+
+            $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->$setter($value);
+        }
+    }
+
 
 
     /**
@@ -127,7 +170,7 @@ class <?= $name ?> implements <?= $interface ?>
     {
         $entity = $this->repository->find($id);
         if (!$entity) {
-            throw new NotFoundHttpException(sprintf('%s with id %d not found.', $id, $entity));
+            throw new NotFoundHttpException(sprintf(' <?= basename(str_replace('\\', '/', $entityClass)) ?> with id %d not found.', $id));
         }
         $this->repository->delete<?= basename(str_replace('\\', '/', $entityClass)) ?>($entity);
     }
