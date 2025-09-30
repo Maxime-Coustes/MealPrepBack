@@ -13,7 +13,7 @@ class TagRepository extends AbstractSolidRepository
     {
         parent::__construct($registry, Tag::class);
     }
-/**
+    /**
      * Persiste un Tag unique.
      */
     public function createTag(Tag $tag): void
@@ -27,16 +27,21 @@ class TagRepository extends AbstractSolidRepository
      */
     public function createTags(TagCollection $tags): void
     {
-        foreach ($tags->getTags() as $tag) {
-            $this->getEntityManager()->persist($tag);
-        }
-        $this->getEntityManager()->flush();
+        $this->saveTags($tags);
     }
 
     /**
      * Met à jour une collection de Tags.
      */
     public function updateTags(TagCollection $tags): void
+    {
+        $this->saveTags($tags);
+    }
+
+    /**
+     * Handle the persist and flush behavior
+     */
+    private function saveTags(TagCollection $tags): void
     {
         foreach ($tags->getTags() as $tag) {
             $this->getEntityManager()->persist($tag);
