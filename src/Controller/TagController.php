@@ -33,10 +33,9 @@ class TagController extends AbstractController
     }
 
 
-    #[Route('/tag/list', name: 'tag_list', methods: ['GET'])]
+    #[Route('/list', name: 'tag_list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        dd('here');
         $tags = $this->tagService->findAll();
 
         $data = array_map(fn($tag) => [
@@ -55,36 +54,65 @@ class TagController extends AbstractController
     public function update(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $tags = new TagCollection();
+        $tagsToUpdate = new TagCollection();
+        $notFound = new TagCollection();
 
         foreach ($data as $t) {
-            $existingTag = $this->tagService->find($t['id']); // récupère depuis la BDD
-            if (!$existingTag) {
-                continue; // tag non trouvé, éventuellement loguer ou gérer
+            if (empty($t['id'])) {
+                // Si pas d'ID fourni
+                continue;
             }
 
-            $existingTag->setName($t['name']); // modification
-            $tags->addTag($existingTag);       // ajout à la collection
+            $existingTag = $this->tagService->find($t['id']); // récupère depuis la BDD
+            if (!$existingTag) {
+                $notFound->addTag(new Tag($t['id'])); // ou juste log l'id
+                continue;
+            }
+
+            // Modification de l'entité existante
+            $existingTag->setName($t['name']);
+            $tagsToUpdate->addTag($existingTag);
         }
 
-        $result = $this->tagService->updateTags($tags);
+        if ($tagsToUpdate->isEmpty()) {
+            return $this->json([
+                'updated' => [],
+                'not_found' => $notFound->getTags(),
+                'message' => 'Aucun tag existant n\'a été fourni.'
+            ], 404);
+        }
 
-        return $this->json($result);
+        $updated = $this->tagService->updateTags($tagsToUpdate);
+
+        return $this->json([
+            'updated' => $updated['updated']->getTags(),
+            'not_found' => array_merge($notFound->getTags(), $updated['not_found']->getTags()),
+        ]);
     }
+
 
 
     #[Route('/{id}', name: 'read', methods: ['GET'])]
-    public function read(): JsonResponse
+    public function read(int $id): JsonResponse
     {
-        $tags = $this->tagService->findAll();
+        $tag = $this->tagService->find($id);
 
-        $data = array_map(fn($tag) => [
+        if (!$tag) {
+            return $this->json([
+                'message' => 'Tag introuvable.'
+            ], 404);
+        }
+
+        // Transformer l'entité en tableau
+        $data = [
             'id' => $tag->getId(),
             'name' => $tag->getName(),
-        ], $tags);
+            // ajoute d'autres champs si nécessaire
+        ];
 
         return $this->json($data);
     }
+
 
     #[Route('/delete/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse

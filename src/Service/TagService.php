@@ -101,15 +101,14 @@ class TagService implements TagServiceInterface
 
         foreach ($reflection->getProperties() as $property) {
             $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
-
+            
             if (!empty($attrs)) {
                 $columns[] = $property->getName();
             }
         }
-
+        
         foreach ($tagCollection->getTags() as $tag) {
             $id = $tag->getId();
-
             if (null === $id) {
                 $notFound->addTag($tag);
 
@@ -120,7 +119,6 @@ class TagService implements TagServiceInterface
 
             if (!$existing) {
                 $notFound->addTag($tag);
-
                 continue;
             }
 

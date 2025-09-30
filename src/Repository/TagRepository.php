@@ -43,10 +43,21 @@ class TagRepository extends AbstractSolidRepository
      */
     private function saveTags(TagCollection $tags): void
     {
-        foreach ($tags->getTags() as $tag) {
-            $this->getEntityManager()->persist($tag);
+        $em = $this->getEntityManager();
+        $conn = $em->getConnection();
+
+        $conn->beginTransaction(); // Démarre la transaction
+        try {
+            foreach ($tags->getTags() as $tag) {
+                $em->persist($tag);
+            }
+
+            $em->flush(); // Écriture finale
+            $conn->commit(); // Commit si tout s'est bien passé
+        } catch (\Throwable $e) {
+            $conn->rollBack(); // Annule la transaction si erreur
+            throw $e;          // Remonte l'exception
         }
-        $this->getEntityManager()->flush();
     }
 
     /**
