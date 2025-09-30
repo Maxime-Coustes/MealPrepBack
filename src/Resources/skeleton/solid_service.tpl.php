@@ -56,6 +56,9 @@ class <?= $name ?> implements <?= $interface ?>
         $toUpdate = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
         $notFound = new <?= basename(str_replace('\\', '/', $entityClass)) ?>Collection();
 
+        $em = $this->repository->getEntityManager();
+        $uow = $em->getUnitOfWork();
+
         // Récupération dynamique des propriétés simples via Reflection
         $columns = [];
         $reflection = new \ReflectionClass($this->repository->getEntityClass());
@@ -80,13 +83,19 @@ class <?= $name ?> implements <?= $interface ?>
                 continue;
             }
 
-            // Vérifie si au moins une propriété a changé
+            // Snapshot original Doctrine (avant modification)
+            $orig = $uow->getOriginalEntityData($existing);
+
             $hasChanged = false;
             foreach ($columns as $column) {
                 $getter = 'get' . ucfirst($column);
                 $setter = 'set' . ucfirst($column);
-                if ($existing->$getter() !== $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->$getter()) {
-                    $existing->$setter($<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->$getter());
+
+                $newValue = $<?= lcfirst(basename(str_replace('\\', '/', $entityClass))) ?>->$getter();
+                $oldValue = $orig[$column] ?? $existing->$getter();
+
+                if ($oldValue !== $newValue) {
+                    $existing->$setter($newValue);
                     $hasChanged = true;
                 }
             }
@@ -99,10 +108,11 @@ class <?= $name ?> implements <?= $interface ?>
         $this->repository->update<?= basename(str_replace('\\', '/', $entityClass)) ?>s($toUpdate);
 
         return [
-            'updated' => $toUpdate,
+            'updated'   => $toUpdate,
             'not_found' => $notFound,
         ];
     }
+
 
 
 
@@ -125,6 +135,11 @@ class <?= $name ?> implements <?= $interface ?>
     public function find(int $id): ?<?= basename(str_replace('\\', '/', $entityClass)) ?>
     {
         return $this->repository->find($id);
+    }
+
+    public function findAll(): array
+    {
+        return $this->repository->findAll();
     }
 
     /**

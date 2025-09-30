@@ -6,8 +6,19 @@ meta {
 
 post {
   url: http://localhost:8000/tag/create
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "tags": [
+      {"name": "toto"},
+      {"name": "titi"},
+      {"name": "tata"}
+    ]
+  }
+  
 }
 
 settings {

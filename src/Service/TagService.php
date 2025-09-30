@@ -47,71 +47,73 @@ class TagService implements TagServiceInterface
      *
      * @return array{updated: TagCollection, not_found: TagCollection}
      */
-//     public function updateTags(TagCollection $tagCollection): array
-//     {
-//         dd($tagCollection);
-//         $toUpdate = new TagCollection();
-//         $notFound = new TagCollection();
+    public function updateTags(TagCollection $tagCollection): array
+    {
+        $toUpdate = new TagCollection();
+        $notFound = new TagCollection();
 
-//         // Récupération dynamique des propriétés simples via Reflection
-//         $columns = [];
-//         $reflection = new \ReflectionClass($this->repository->getEntityClass());
+        $em = $this->repository->getEntityManager();
+        $uow = $em->getUnitOfWork();
 
-//         foreach ($reflection->getProperties() as $property) {
-//             $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
+        // Récupération dynamique des propriétés simples via Reflection
+        $columns = [];
+        $reflection = new \ReflectionClass($this->repository->getEntityClass());
 
-//             if (!empty($attrs)) {
-//                 $columns[] = $property->getName();
-//             }
-//         }
-// dump('toto');
-// dump($tagCollection->getTags());
+        foreach ($reflection->getProperties() as $property) {
+            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
 
-//         foreach ($tagCollection->getTags() as $tag) {
-//             $id = $tag->getId();
+            if (!empty($attrs)) {
+                $columns[] = $property->getName();
+            }
+        }
 
-//             if (null === $id) {
-//                 dump('bla ' , $id);
+        foreach ($tagCollection->getTags() as $tag) {
+            $id = $tag->getId();
 
-//                 $notFound->addTag($tag);
-// dump('id? ' , $id);
-//                 continue;
-//             }
+            if (null === $id) {
+                $notFound->addTag($tag);
 
-//             $existing = $this->find($id);
+                continue;
+            }
 
-//             dump($existing->getName(), $tag->getName());
-//             if (!$existing) {
-//                 $notFound->addTag($tag);
+            $existing = $this->repository->find($id);
 
-//                 continue;
-//             }
+            if (!$existing) {
+                $notFound->addTag($tag);
 
-//             // Vérifie si au moins une propriété a changé
-//             $hasChanged = false;
+                continue;
+            }
 
-//             foreach ($columns as $column) {
-//                 $getter = 'get'.ucfirst($column);
-//                 $setter = 'set'.ucfirst($column);
+            // Snapshot original Doctrine (avant modification)
+            $orig = $uow->getOriginalEntityData($existing);
 
-//                 if ($existing->$getter() !== $tag->$getter()) {
-//                     $existing->$setter($tag->$getter());
-//                     $hasChanged = true;
-//                 }
-//             }
+            $hasChanged = false;
 
-//             if ($hasChanged) {
-//                 $toUpdate->addTag($existing);
-//             }
-//         }
+            foreach ($columns as $column) {
+                $getter = 'get'.ucfirst($column);
+                $setter = 'set'.ucfirst($column);
 
-//         $this->repository->updateTags($toUpdate);
+                $newValue = $tag->$getter();
+                $oldValue = $orig[$column] ?? $existing->$getter();
 
-//         return [
-//             'updated' => $toUpdate,
-//             'not_found' => $notFound,
-//         ];
-//     }
+                if ($oldValue !== $newValue) {
+                    $existing->$setter($newValue);
+                    $hasChanged = true;
+                }
+            }
+
+            if ($hasChanged) {
+                $toUpdate->addTag($existing);
+            }
+        }
+
+        $this->repository->updateTags($toUpdate);
+
+        return [
+            'updated' => $toUpdate,
+            'not_found' => $notFound,
+        ];
+    }
 
     /**
      * Supprime une entité Tag par son ID.
@@ -134,9 +136,9 @@ class TagService implements TagServiceInterface
     }
 
     public function findAll(): array
-{
-    return $this->repository->findAll();
-}
+    {
+        return $this->repository->findAll();
+    }
 
     /**
      * Vérifie si une entité existe déjà en base en fonction d'un champ unique.

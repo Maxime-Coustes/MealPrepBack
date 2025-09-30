@@ -53,7 +53,7 @@ class TagCollection implements \Countable, \IteratorAggregate
      */
     public function getNames(): array
     {
-        return array_map(fn (Tag $e) => $e->getName(), $this->tags);
+        return array_map(fn(Tag $e) => $e->getName(), $this->tags);
     }
 
     /**

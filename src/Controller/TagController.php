@@ -51,27 +51,26 @@ class TagController extends AbstractController
 
 
 
-//     #[Route('/update', name: 'update', methods: ['PUT'])]
-//     public function update(Request $request): JsonResponse
-//     {
-//         $data = json_decode($request->getContent(), true);
-//         $tags = new TagCollection();
-// dump('totototo');
-//         foreach ($data['tags'] ?? [] as $t) {
-//             dump('existing:', $this->tagService->find($t['id']));
-//             $existingTag = $this->tagService->find($t['id']); // récupère depuis la BDD
-//             if (!$existingTag) {
-//                 continue; // tag non trouvé, éventuellement loguer ou gérer
-//             }
+    #[Route('/update', name: 'update', methods: ['PUT'])]
+    public function update(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $tags = new TagCollection();
 
-//             $existingTag->setName($t['name']); // modification
-//             $tags->addTag($existingTag);       // ajout à la collection
-//         }
+        foreach ($data as $t) {
+            $existingTag = $this->tagService->find($t['id']); // récupère depuis la BDD
+            if (!$existingTag) {
+                continue; // tag non trouvé, éventuellement loguer ou gérer
+            }
 
-//         $result = $this->tagService->updateTags($tags);
+            $existingTag->setName($t['name']); // modification
+            $tags->addTag($existingTag);       // ajout à la collection
+        }
 
-//         return $this->json($result);
-//     }
+        $result = $this->tagService->updateTags($tags);
+
+        return $this->json($result);
+    }
 
 
     #[Route('/{id}', name: 'read', methods: ['GET'])]
@@ -82,7 +81,6 @@ class TagController extends AbstractController
         $data = array_map(fn($tag) => [
             'id' => $tag->getId(),
             'name' => $tag->getName(),
-            // ajouter d'autres propriétés si nécessaire
         ], $tags);
 
         return $this->json($data);
