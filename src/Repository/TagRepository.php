@@ -33,11 +33,6 @@ class TagRepository extends AbstractSolidRepository
         $this->getEntityManager()->flush();
     }
 
-        public function getEntityClass(): string
-    {
-        return Tag::class;
-    }
-
     /**
      * Met à jour une collection de Tags.
      */
