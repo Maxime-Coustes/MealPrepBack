@@ -1,0 +1,40 @@
+meta {
+  name: update
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8000/tag/update
+  body: json
+  auth: inherit
+}
+
+body:json {
+  [
+    {
+      "id": 1,
+      "name": "Fruits !!!"
+    },
+    {
+      "id": 2,
+      "name": "Légumes !!!!"
+    },
+    {
+      "id": 3,
+      "name": "Épices"
+    },
+    {
+      "id": 4,
+      "name": "toto"
+    },
+    {
+      "id": 5,
+      "name": "titi"
+    }
+  ]
+}
+
+settings {
+  encodeUrl: true
+}

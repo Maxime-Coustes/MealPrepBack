@@ -29,7 +29,7 @@ class IngredientController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    #[Route(self::BASE_PATH .'/create', name: 'createIngredients', methods: ['POST'])]
+    #[Route(self::BASE_PATH . '/create', name: 'createIngredients', methods: ['POST'])]
     public function createIngredientsAction(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -37,25 +37,11 @@ class IngredientController extends AbstractController
         if (empty($data)) {
             return new JsonResponse(['error' => 'No data provided'], JsonResponse::HTTP_BAD_REQUEST);
         }
-
-        $ingredientCollection = new IngredientCollection();
-
-        foreach ($data as $ingredientData) {
-            $ingredient = new Ingredient();
-            $ingredient->setName(ucfirst($ingredientData['name']));
-            $ingredient->setUnit($ingredientData['unit']);
-            $ingredient->setProteins($ingredientData['proteins']);
-            $ingredient->setFat($ingredientData['fat']);
-            $ingredient->setCarbs($ingredientData['carbs']);
-            $ingredient->setCalories($ingredientData['calories']);
-
-            $ingredientCollection->addIngredient($ingredient);
-        }
         try {
-            $result = $this->ingredientService->createIngredients($ingredientCollection);
+            $result = $this->ingredientService->createIngredients($data);
 
-            $createdNames = array_map(fn($i) => $i->getName(), $result['created']->getIngredients());
-            $existingNames = array_map(fn($i) => $i->getName(), $result['existing']->getIngredients());
+            $createdNames = $result['created']->getNames();
+            $existingNames = $result['existing']->getNames();
 
             $isConflict = count($createdNames) === 0;
 

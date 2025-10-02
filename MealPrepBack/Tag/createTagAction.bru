@@ -1,0 +1,26 @@
+meta {
+  name: createTagAction
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8000/tag/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "tags": [
+      {"name": "toto"},
+      {"name": "titi"},
+      {"name": "tata"}
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+}

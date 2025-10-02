@@ -4,14 +4,9 @@ namespace App\Repository;
 
 use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Ingredient>
- */
-// DAO
-class IngredientRepository extends ServiceEntityRepository
+class IngredientRepository extends AbstractSolidRepository
 {
 
     /**
