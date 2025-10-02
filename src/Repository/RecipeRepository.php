@@ -3,15 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Recipe;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 
-/**
- * @extends ServiceEntityRepository<Recipe>
- */
-class RecipeRepository extends ServiceEntityRepository
+class RecipeRepository extends AbstractSolidRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

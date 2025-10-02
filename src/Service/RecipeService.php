@@ -8,6 +8,7 @@ use App\Entity\RecipeCollection;
 use App\Entity\RecipeIngredient;
 use App\Interface\RecipeServiceInterface;
 use App\Repository\RecipeRepository;
+use Src\Utils\DoctrineHelper;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -60,20 +61,18 @@ class RecipeService implements RecipeServiceInterface
     public function create(array $recipePayload): array
     {
         // Vérifie si la recette existe déjà
-        $recipeAlreadyExists = $this->checkIfExists($recipePayload);
-
-        if ($recipeAlreadyExists) {
+        if ($this->checkIfExists($recipePayload)) {
             return [
                 'conflict' => $recipePayload['name'],
             ];
         }
 
-        // Sinon, on crée une nouvelle recette
-        $recipeToCreate = new Recipe();
-        $recipeToCreate->setName($recipePayload['name']);
-        $recipeToCreate->setPreparation($recipePayload['preparation'] ?? null);
+        // Création de l’entité Recipe et remplissage des propriétés scalaires via Reflection
+        /** @var Recipe $recipeToCreate */
+        $recipeToCreate = DoctrineHelper::populateEntityFromArray($this->repository->getEntityClass(), $recipePayload);
 
-        foreach ($recipePayload['recipeIngredients'] as $recipeIngredientsData) {
+        // Gestion des relations RecipeIngredients
+        foreach ($recipePayload['recipeIngredients'] ?? [] as $recipeIngredientsData) {
             $ingredient = $this->findIngredient($recipeIngredientsData['ingredient'] ?? 0);
             if (!$ingredient) {
                 throw new BadRequestHttpException("Ingredient with id {$recipeIngredientsData['ingredient']} not found");
@@ -88,13 +87,13 @@ class RecipeService implements RecipeServiceInterface
             $recipeToCreate->addRecipeIngredient($recipeIngredient);
         }
 
+        // Persistance
         $this->repository->createRecipe($recipeToCreate);
 
         return [
             'created' => $recipeToCreate,
         ];
     }
-
 
     /**
      * @param array<string, mixed> $recipePayload
@@ -254,7 +253,9 @@ class RecipeService implements RecipeServiceInterface
                 }
             } else {
                 $ingredient = $this->ingredientService->findOneById($id);
-                if(!$ingredient){  continue; }
+                if (!$ingredient) {
+                    continue;
+                }
 
                 $ri = new RecipeIngredient();
                 $ri->setIngredient($ingredient)

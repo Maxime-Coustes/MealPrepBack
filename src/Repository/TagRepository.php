@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Repository;
+
+use App\Entity\Tag;
+use App\Entity\TagCollection;
+use Doctrine\Persistence\ManagerRegistry;
+
+
+class TagRepository extends AbstractSolidRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, Tag::class);
+    }
+    /**
+     * Persiste un Tag unique.
+     */
+    public function createTag(Tag $tag): void
+    {
+        $this->getEntityManager()->persist($tag);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Persiste plusieurs Tags à partir d'une TagCollection.
+     */
+    public function createTags(TagCollection $tags): void
+    {
+        $this->saveTags($tags);
+    }
+
+    /**
+     * Met à jour une collection de Tags.
+     */
+    public function updateTags(TagCollection $tags): void
+    {
+        $this->saveTags($tags);
+    }
+
+    /**
+     * Handle the persist and flush behavior
+     */
+    private function saveTags(TagCollection $tags): void
+    {
+        $em = $this->getEntityManager();
+        $conn = $em->getConnection();
+
+        $conn->beginTransaction(); // Démarre la transaction
+        try {
+            foreach ($tags->getTags() as $tag) {
+                $em->persist($tag);
+            }
+
+            $em->flush(); // Écriture finale
+            $conn->commit(); // Commit si tout s'est bien passé
+        } catch (\Throwable $e) {
+            $conn->rollBack(); // Annule la transaction si erreur
+            throw $e;          // Remonte l'exception
+        }
+    }
+
+    /**
+     * Supprime un Tag.
+     */
+    public function deleteTag(Tag $tag): void
+    {
+        $this->getEntityManager()->remove($tag);
+        $this->getEntityManager()->flush();
+    }
+
+
+    /**
+     * Cherche un Tag par son nom.
+     */
+    public function findOneByName(string $name): ?Tag
+    {
+        return $this->findOneBy(['name' => $name]);
+    }
+}
