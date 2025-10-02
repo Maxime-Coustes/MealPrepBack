@@ -6,6 +6,7 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
 use App\Repository\IngredientRepository;
 use App\Interface\IngredientServiceInterface;
+use Src\Utils\DoctrineHelper;
 
 class IngredientService implements IngredientServiceInterface
 {
@@ -17,26 +18,32 @@ class IngredientService implements IngredientServiceInterface
     }
 
     /**
-     * @param IngredientCollection $ingredientsCollection
+     * @param array<int, array<string, mixed>> $ingredientsData
      * @return array{created: IngredientCollection, existing: IngredientCollection}
      */
-    public function createIngredients(IngredientCollection $ingredientsCollection): array
+    public function createIngredients(array $ingredientsData): array
     {
+        $columns = DoctrineHelper::getDoctrineColumns($this->ingredientRepository->getEntityClass());
+
         $newIngredientCollection = new IngredientCollection();
         $existing = new IngredientCollection();
 
-        foreach ($ingredientsCollection->getIngredients() as $ingredient) {
-            // Vérifie si l'ingrédient existe déjà
-            $exist = $this->checkIfExists($ingredient);
+        foreach ($ingredientsData as $ingredientArray) {
+            $ingredient = DoctrineHelper::populateEntityFromArray(Ingredient::class, $ingredientArray, false);
 
-            if ($exist) {
+            $this->applyGenericRules($ingredient, $columns);
+
+            if ($this->checkIfExists($ingredient)) {
                 $existing->addIngredient($ingredient);
             } else {
-                // Si l'ingrédient n'existe pas, on l'ajoute à la nouvelle collection
                 $newIngredientCollection->addIngredient($ingredient);
-                $this->ingredientRepository->createIngredients($newIngredientCollection);
             }
         }
+
+        if (!$newIngredientCollection->isEmpty()) {
+            $this->ingredientRepository->createIngredients($newIngredientCollection);
+        }
+
 
         return [
             'created' => $newIngredientCollection,
@@ -44,6 +51,39 @@ class IngredientService implements IngredientServiceInterface
         ];
     }
 
+
+    /**
+     * Applique des règles de normalisation sur les propriétés de l'entité Ingredient
+     * en fonction des colonnes connues de Doctrine.
+     *
+     * Actuellement :
+     * - "name" : force la casse à "Majuscule + minuscules" (ex: "tomate" => "Tomate").
+     *
+     * La méthode est conçue pour être extensible et permettre d'ajouter d'autres règles
+     * de nettoyage ou de validation génériques sur les champs de l'entité avant persistance.
+     *
+     * @param Ingredient $ingredient L'entité sur laquelle appliquer les règles.
+     * @param string[]   $columns    Les colonnes Doctrine de l'entité (utilisées pour trouver
+     *                               dynamiquement getters et setters).
+     */
+    private function applyGenericRules(Ingredient $ingredient, array $columns): void
+    {
+        foreach ($columns as $column) {
+            $getter = 'get' . ucfirst($column);
+            $setter = 'set' . ucfirst($column);
+
+            if (!method_exists($ingredient, $getter) || !method_exists($ingredient, $setter)) {
+                continue;
+            }
+
+            $value = $ingredient->$getter();
+
+            if ($column === 'name' && $value !== null) {
+                $value = ucfirst(strtolower($value));
+            }
+            $ingredient->$setter($value);
+        }
+    }
 
     /**
      * @param Ingredient $ingredient
@@ -115,6 +155,7 @@ class IngredientService implements IngredientServiceInterface
     /**
      * @param IngredientCollection $ingredients
      * @return array{updated: IngredientCollection, not_found: IngredientCollection}
+     * @TODO : improve this method using new \ReflectionClass($this->repository->getEntityClass());
      */
     public function updateIngredients(IngredientCollection $ingredients): array
     {

@@ -102,8 +102,11 @@ qui permet de générer le squelette d'un service prêt à l’usage pour une en
 #Exemple : php bin/console make:solid-service Recipe
 
 
-
 ````make:solid-interface````
 qui permet de générer une interface de service SOLID pour une entité donnée.
 #Exemple : php bin/console make:solid-interface Recipe
+
+````make:solid-collection````
+qui permet de générer une Collection pour une entité donnée.
+#Exemple : php bin/console make:solid-collection Recipe
 
