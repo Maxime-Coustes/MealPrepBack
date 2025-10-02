@@ -41,6 +41,7 @@ class TagController extends AbstractController
         $data = array_map(fn($tag) => [
             'id' => $tag->getId(),
             'name' => $tag->getName(),
+            'status' => $tag->getStatus(),
             // ajouter d'autres propriétés si nécessaire
         ], $tags);
 
@@ -58,20 +59,18 @@ class TagController extends AbstractController
         $notFound = new TagCollection();
 
         foreach ($data as $t) {
-            if (empty($t['id'])) {
-                // Si pas d'ID fourni
-                continue;
+            if (empty($t['id'])) continue;
+
+            $tag = new Tag();
+            $tag->setId($t['id']); // seulement l’ID pour savoir qui comparer
+
+            // on stocke aussi les nouvelles valeurs du payload dans un tableau générique
+            // (évite de setter un champ qui n’existe pas encore dans l’entité)
+            foreach ($t as $field => $value) {
+                $tag->{"__newValues"}[$field] = $value;
             }
 
-            $existingTag = $this->tagService->find($t['id']); // récupère depuis la BDD
-            if (!$existingTag) {
-                $notFound->addTag(new Tag($t['id'])); // ou juste log l'id
-                continue;
-            }
-
-            // Modification de l'entité existante
-            $existingTag->setName($t['name']);
-            $tagsToUpdate->addTag($existingTag);
+            $tagsToUpdate->addTag($tag);
         }
 
         if ($tagsToUpdate->isEmpty()) {
@@ -81,7 +80,6 @@ class TagController extends AbstractController
                 'message' => 'Aucun tag existant n\'a été fourni.'
             ], 404);
         }
-
         $updated = $this->tagService->updateTags($tagsToUpdate);
 
         return $this->json([
