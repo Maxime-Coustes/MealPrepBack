@@ -65,8 +65,8 @@ class TagService implements TagServiceInterface
     private function applyGenericRules(Tag $tag, array $columns): void
     {
         foreach ($columns as $column) {
-            $getter = 'get'.ucfirst($column);
-            $setter = 'set'.ucfirst($column);
+            $getter = 'get' . ucfirst($column);
+            $setter = 'set' . ucfirst($column);
 
             if (!method_exists($tag, $getter) || !method_exists($tag, $setter)) {
                 continue;
@@ -83,66 +83,33 @@ class TagService implements TagServiceInterface
     }
 
     /**
-     * Met à jour une collection d'entités Tag.
+     * Met à jour une collection d'entités Tag en appliquant les nouvelles valeurs fournies.
      *
-     * @return array{updated: TagCollection, not_found: TagCollection}
+     * Chaque entité de la collection est comparée à l'entité existante en base.
+     * Si l'entité existe, les valeurs de ses propriétés sont mises à jour dynamiquement
+     * via applyNewValues / setFieldIfExists. Les entités mises à jour sont renvoyées,
+     * ainsi que celles non trouvées en base.
+     *
+     * @return array{
+     *     updated: TagCollection,   // Collection des entités mises à jour
+     *     not_found: TagCollection  // Collection des entités non trouvées en base
+     * }
      */
     public function updateTags(TagCollection $tagCollection): array
     {
         $toUpdate = new TagCollection();
         $notFound = new TagCollection();
 
-        $em = $this->repository->getEntityManager();
-        $uow = $em->getUnitOfWork();
-
-        // Récupération dynamique des propriétés simples via Reflection
-        $columns = [];
-        $reflection = new \ReflectionClass($this->repository->getEntityClass());
-
-        foreach ($reflection->getProperties() as $property) {
-            $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);
-            
-            if (!empty($attrs)) {
-                $columns[] = $property->getName();
-            }
-        }
-        
         foreach ($tagCollection->getTags() as $tag) {
-            $id = $tag->getId();
-            if (null === $id) {
-                $notFound->addTag($tag);
-
-                continue;
-            }
-
-            $existing = $this->repository->find($id);
+            $existing = $this->repository->find($tag->getId());
 
             if (!$existing) {
                 $notFound->addTag($tag);
+
                 continue;
             }
 
-            // Snapshot original Doctrine (avant modification)
-            $orig = $uow->getOriginalEntityData($existing);
-
-            $hasChanged = false;
-
-            foreach ($columns as $column) {
-                $getter = 'get'.ucfirst($column);
-                $setter = 'set'.ucfirst($column);
-
-                $newValue = $tag->$getter();
-                $oldValue = $orig[$column] ?? $existing->$getter();
-
-                if ($oldValue !== $newValue) {
-                    $existing->$setter($newValue);
-                    $hasChanged = true;
-                }
-            }
-
-            if ($hasChanged) {
-                $toUpdate->addTag($existing);
-            }
+            $this->applyNewValues($existing, $tag, $toUpdate);
         }
 
         $this->repository->updateTags($toUpdate);
@@ -151,6 +118,57 @@ class TagService implements TagServiceInterface
             'updated' => $toUpdate,
             'not_found' => $notFound,
         ];
+    }
+
+    /**
+     * Applique les nouvelles valeurs d'un payload sur l'entité existante.
+     *
+     * Parcourt toutes les clés du tableau __newValues (placeholder temporaire) du payload
+     * et appelle setFieldIfExists pour chaque champ.
+     *
+     * @param object        $existing L'entité existante en base
+     * @param Tag           $payload  L'entité contenant les nouvelles valeurs
+     * @param TagCollection $toUpdate La collection où ajouter les entités modifiées
+     */
+    private function applyNewValues($existing, $payload, TagCollection $toUpdate): void
+    {
+        $newValues = $payload->__newValues ?? [];
+
+        foreach ($newValues as $field => $value) {
+            $this->setFieldIfExists($existing, $field, $value, $toUpdate);
+        }
+    }
+
+    /**
+     * Met à jour une propriété d'une entité si celle-ci existe et que sa valeur est différente.
+     *
+     * Vérifie l'existence de la propriété, du getter et du setter correspondants avant
+     * de modifier la valeur. Ajoute l'entité à la collection des entités mises à jour si nécessaire.
+     *
+     * @param object        $entity   L'entité à modifier
+     * @param string        $field    Le nom du champ à mettre à jour
+     * @param mixed         $newValue La nouvelle valeur à appliquer
+     * @param TagCollection $toUpdate La collection où ajouter l'entité si modifiée
+     */
+    private function setFieldIfExists($entity, string $field, $newValue, TagCollection $toUpdate): void
+    {
+        if (!property_exists($entity, $field)) {
+            return;
+        }
+
+        $getter = 'get' . ucfirst($field);
+        $setter = 'set' . ucfirst($field);
+
+        if (!method_exists($entity, $getter) || !method_exists($entity, $setter)) {
+            return;
+        }
+
+        $oldValue = $entity->$getter();
+
+        if ($oldValue !== $newValue) {
+            $entity->$setter($newValue);
+            $toUpdate->addTag($entity);
+        }
     }
 
     /**
