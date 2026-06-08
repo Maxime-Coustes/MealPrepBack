@@ -43,7 +43,7 @@ class DoctrineHelper
     /**
      * Remplit les propriétés d'une entité à partir d'un tableau.
      *
-     * @template T
+     * @template T of object
      * @param class-string<T>|T $entityOrClass Instance ou nom de la classe de l'entité
      * @param array<string, mixed> $data Tableau associatif [champ => valeur]
      * @param bool $useDoctrineColumns Si true, ne prend que les colonnes Doctrine scalaires (optionnel)
@@ -52,11 +52,21 @@ class DoctrineHelper
      */
     public static function populateEntityFromArray(string|object $entityOrClass, array $data, bool $useDoctrineColumns = true): object
     {
-        $entity = is_object($entityOrClass) ? $entityOrClass : new $entityOrClass();
+        if (is_object($entityOrClass)) {
+            $entity = $entityOrClass;
+            $className = $entity::class;
+        } else {
+            if (!class_exists($entityOrClass)) {
+                throw new \InvalidArgumentException(sprintf('Entity class "%s" does not exist.', $entityOrClass));
+            }
+
+            $className = $entityOrClass;
+            $entity = new $className();
+        }
+
         $columns = null;
 
-        if ($useDoctrineColumns && is_string($entityOrClass)) {
-            $className = is_string($entityOrClass) ? $entityOrClass : get_class($entity);
+        if ($useDoctrineColumns) {
             $columns = self::getDoctrineColumns($className);
         }
 

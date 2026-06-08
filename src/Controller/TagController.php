@@ -55,20 +55,24 @@ class TagController extends AbstractController
     public function update(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            $data = [];
+        }
+
         $tagsToUpdate = new TagCollection();
         $notFound = new TagCollection();
+        /** @var array<int, array<string, mixed>> $newValuesByTagId */
+        $newValuesByTagId = [];
 
         foreach ($data as $t) {
+            if (!is_array($t)) continue;
             if (empty($t['id'])) continue;
 
             $tag = new Tag();
-            $tag->setId($t['id']); // seulement l’ID pour savoir qui comparer
+            $id = (int) $t['id'];
+            $tag->setId($id); // seulement l’ID pour savoir qui comparer
 
-            // on stocke aussi les nouvelles valeurs du payload dans un tableau générique
-            // (évite de setter un champ qui n’existe pas encore dans l’entité)
-            foreach ($t as $field => $value) {
-                $tag->{"__newValues"}[$field] = $value;
-            }
+            $newValuesByTagId[$id] = $t;
 
             $tagsToUpdate->addTag($tag);
         }
@@ -80,7 +84,7 @@ class TagController extends AbstractController
                 'message' => 'Aucun tag existant n\'a été fourni.'
             ], 404);
         }
-        $updated = $this->tagService->updateTags($tagsToUpdate);
+        $updated = $this->tagService->updateTags($tagsToUpdate, $newValuesByTagId);
 
         return $this->json([
             'updated' => $updated['updated']->getTags(),

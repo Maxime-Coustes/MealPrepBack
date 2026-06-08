@@ -90,12 +90,13 @@ class TagService implements TagServiceInterface
      * via applyNewValues / setFieldIfExists. Les entités mises à jour sont renvoyées,
      * ainsi que celles non trouvées en base.
      *
+     * @param array<int, array<string, mixed>> $newValuesByTagId
      * @return array{
      *     updated: TagCollection,   // Collection des entités mises à jour
      *     not_found: TagCollection  // Collection des entités non trouvées en base
      * }
      */
-    public function updateTags(TagCollection $tagCollection): array
+    public function updateTags(TagCollection $tagCollection, array $newValuesByTagId = []): array
     {
         $toUpdate = new TagCollection();
         $notFound = new TagCollection();
@@ -109,7 +110,8 @@ class TagService implements TagServiceInterface
                 continue;
             }
 
-            $this->applyNewValues($existing, $tag, $toUpdate);
+            $id = $tag->getId();
+            $this->applyNewValues($existing, $newValuesByTagId[$id] ?? [], $toUpdate);
         }
 
         $this->repository->updateTags($toUpdate);
@@ -130,10 +132,11 @@ class TagService implements TagServiceInterface
      * @param Tag           $payload  L'entité contenant les nouvelles valeurs
      * @param TagCollection $toUpdate La collection où ajouter les entités modifiées
      */
-    private function applyNewValues($existing, $payload, TagCollection $toUpdate): void
+    /**
+     * @param array<string, mixed> $newValues
+     */
+    private function applyNewValues(Tag $existing, array $newValues, TagCollection $toUpdate): void
     {
-        $newValues = $payload->__newValues ?? [];
-
         foreach ($newValues as $field => $value) {
             $this->setFieldIfExists($existing, $field, $value, $toUpdate);
         }
@@ -150,12 +153,11 @@ class TagService implements TagServiceInterface
      * @param mixed         $newValue La nouvelle valeur à appliquer
      * @param TagCollection $toUpdate La collection où ajouter l'entité si modifiée
      */
-    private function setFieldIfExists($entity, string $field, $newValue, TagCollection $toUpdate): void
+    /**
+     * Met a jour une propriete d'une entite si elle existe et que sa valeur est differente.
+     */
+    private function setFieldIfExists(Tag $entity, string $field, mixed $newValue, TagCollection $toUpdate): void
     {
-        if (!$entity instanceof Tag) {
-            return;
-        }
-
         if (!property_exists($entity, $field)) {
             return;
         }
