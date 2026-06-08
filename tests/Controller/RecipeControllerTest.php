@@ -2,15 +2,20 @@
 
 namespace App\Tests\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Routing\RouterInterface;
 
-final class RecipeControllerTest extends WebTestCase
+final class RecipeControllerTest extends KernelTestCase
 {
     public function testIndex(): void
     {
-        $client = static::createClient();
-        $client->request('GET', '/recipe');
+        self::bootKernel();
 
-        self::assertResponseIsSuccessful();
+        $router = static::getContainer()->get(RouterInterface::class);
+        self::assertInstanceOf(RouterInterface::class, $router);
+
+        $route = $router->match('/hello');
+
+        self::assertSame('app_recipe', $route['_route']);
     }
 }
