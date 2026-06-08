@@ -6,7 +6,7 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
 use App\Repository\IngredientRepository;
 use App\Interface\IngredientServiceInterface;
-use Src\Utils\DoctrineHelper;
+use App\Helper\DoctrineHelper;
 
 class IngredientService implements IngredientServiceInterface
 {

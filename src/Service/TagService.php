@@ -6,7 +6,7 @@ use App\Entity\Tag;
 use App\Entity\TagCollection;
 use App\Interface\TagServiceInterface;
 use App\Repository\TagRepository;
-use Src\Utils\DoctrineHelper;
+use App\Helper\DoctrineHelper;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class TagService implements TagServiceInterface

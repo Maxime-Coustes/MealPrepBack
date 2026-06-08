@@ -8,7 +8,7 @@ use App\Entity\RecipeCollection;
 use App\Entity\RecipeIngredient;
 use App\Interface\RecipeServiceInterface;
 use App\Repository\RecipeRepository;
-use Src\Utils\DoctrineHelper;
+use App\Helper\DoctrineHelper;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 

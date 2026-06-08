@@ -16,8 +16,8 @@ class Tag
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: false)]
-    private string $status;
+    #[ORM\Column(type: 'string', length: 255, nullable: false, options: ['default' => 'draft'])]
+    private string $status = 'draft';
 
     public function getId(): ?int
     {
