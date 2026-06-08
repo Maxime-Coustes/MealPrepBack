@@ -10,7 +10,7 @@ interface TagServiceInterface
     /**
      * Crée de nouvelles entités Tag à partir d'une collection.
      *
-     * @return array{created: TagCollection ?>, existing: TagCollection ?>}
+     * @return array{created: TagCollection, existing: TagCollection}
      */
     public function createTagCollection(TagCollection $tagCollection): array;
 

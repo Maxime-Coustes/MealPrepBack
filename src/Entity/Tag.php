@@ -29,7 +29,7 @@ class Tag
      *
      * @return  self
      */
-    public function setId($id)
+    public function setId(int $id): self
     {
         $this->id = $id;
 
@@ -51,7 +51,7 @@ class Tag
     /**
      * Get the value of status
      */
-    public function getStatus()
+    public function getStatus(): string
     {
         return $this->status;
     }
@@ -61,7 +61,7 @@ class Tag
      *
      * @return  self
      */
-    public function setStatus($status)
+    public function setStatus(string $status): self
     {
         $this->status = $status;
 

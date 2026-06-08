@@ -5,6 +5,9 @@ namespace App\Repository;
 use App\Entity\Recipe;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends AbstractSolidRepository<Recipe>
+ */
 class RecipeRepository extends AbstractSolidRepository
 {
     public function __construct(ManagerRegistry $registry)

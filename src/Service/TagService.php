@@ -35,10 +35,10 @@ class TagService implements TagServiceInterface
             $this->applyGenericRules($tag, $columns);
 
             if ($this->checkIfExists($tag)) {
-                $tag = $this->repository->findOneBy([
-                    'name' => $tag->getName(),
-                ]);
-                $existing->addTag($tag);
+                $existingTag = $this->repository->findOneByName((string) $tag->getName());
+                if ($existingTag !== null) {
+                    $existing->addTag($existingTag);
+                }
             } else {
                 $newTagCollection->addTag($tag);
             }
@@ -60,7 +60,7 @@ class TagService implements TagServiceInterface
      * Exemple actuel :
      * - "name" : force la casse à "Majuscule + minuscules".
      *
-     * @param Tag $tag * @param string[] $columns
+     * @param array<int, string> $columns
      */
     private function applyGenericRules(Tag $tag, array $columns): void
     {
@@ -152,6 +152,10 @@ class TagService implements TagServiceInterface
      */
     private function setFieldIfExists($entity, string $field, $newValue, TagCollection $toUpdate): void
     {
+        if (!$entity instanceof Tag) {
+            return;
+        }
+
         if (!property_exists($entity, $field)) {
             return;
         }
@@ -191,6 +195,9 @@ class TagService implements TagServiceInterface
         return $this->repository->find($id);
     }
 
+    /**
+     * @return Tag[]
+     */
     public function findAll(): array
     {
         return $this->repository->findAll();

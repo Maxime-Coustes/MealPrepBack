@@ -49,7 +49,7 @@ class TagCollection implements \Countable, \IteratorAggregate
     /**
      * Retourne les noms de tous les Tags de la collection.
      *
-     * @return string[]
+     * @return array<int, string|null>
      */
     public function getNames(): array
     {
