@@ -9,8 +9,8 @@ interface IngredientServiceInterface
 {
 
     /**
-     * @param array ingredients
-     * @return array
+     * @param array<int, array<string, mixed>> $ingredients
+     * @return array{created: IngredientCollection, existing: IngredientCollection}
      */
     public function createIngredients(array $ingredients): array;
     /**

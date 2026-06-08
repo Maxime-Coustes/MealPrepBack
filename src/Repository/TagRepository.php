@@ -6,7 +6,9 @@ use App\Entity\Tag;
 use App\Entity\TagCollection;
 use Doctrine\Persistence\ManagerRegistry;
 
-
+/**
+ * @extends AbstractSolidRepository<Tag>
+ */
 class TagRepository extends AbstractSolidRepository
 {
     public function __construct(ManagerRegistry $registry)

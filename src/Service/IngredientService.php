@@ -29,6 +29,7 @@ class IngredientService implements IngredientServiceInterface
         $existing = new IngredientCollection();
 
         foreach ($ingredientsData as $ingredientArray) {
+            /** @var Ingredient $ingredient */
             $ingredient = DoctrineHelper::populateEntityFromArray(Ingredient::class, $ingredientArray, false);
 
             $this->applyGenericRules($ingredient, $columns);

@@ -43,13 +43,16 @@ class MakeSolidService extends AbstractMaker
 
         // Déduire noms et namespaces
         $entityClass = "App\\Entity\\$entityName";
+        if (!class_exists($entityClass)) {
+            throw new \InvalidArgumentException(sprintf('Entity class "%s" does not exist.', $entityClass));
+        }
         $interfaceName = "{$entityName}ServiceInterface";
         $interfaceNamespace = "App\\Interface\\$interfaceName";
         $repositoryClass = "App\\Repository\\{$entityName}Repository";
         $repositoryShortName = "{$entityName}Repository";
         $serviceName = "{$entityName}Service";
         $columns = [];
-        $reflection = new \ReflectionClass("App\\Entity\\$entityName");
+        $reflection = new \ReflectionClass($entityClass);
         foreach ($reflection->getProperties() as $property) {
             // On filtre uniquement les propriétés annotées #[ORM\Column]
             $attrs = $property->getAttributes(\Doctrine\ORM\Mapping\Column::class);

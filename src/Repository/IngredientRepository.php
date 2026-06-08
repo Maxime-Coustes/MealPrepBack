@@ -6,6 +6,9 @@ use App\Entity\Ingredient;
 use App\Entity\IngredientCollection;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends AbstractSolidRepository<Ingredient>
+ */
 class IngredientRepository extends AbstractSolidRepository
 {
 
